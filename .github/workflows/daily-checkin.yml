@@ -1,0 +1,58 @@
+name: 紫金山自动打卡
+
+on:
+  schedule:
+    # 每天 7:30 Asia/Shanghai = 23:30 UTC (前一天)
+    - cron: '30 23 * * *'
+  workflow_dispatch:  # 允许手动触发
+    inputs:
+      force:
+        description: '强制运行（忽略时间窗口）'
+        required: false
+        default: 'false'
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出仓库
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: 设置 PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: curl, json
+    
+    - name: 执行打卡
+      env:
+        ACCOUNTS_JSON: ${{ secrets.ACCOUNTS_JSON }}
+      run: |
+        # 写入账号配置
+        echo "$ACCOUNTS_JSON" > accounts.json
+        
+        # 执行打卡脚本
+        php checkin.php
+    
+    - name: 提交结果
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # 创建结果目录
+        mkdir -p results
+        
+        # 移动结果文件
+        if [ -f "checkin_result.json" ]; then
+          mv checkin_result.json "results/$(date +%Y-%m-%d).json"
+        fi
+        
+        # 提交并推送
+        git add results/
+        git commit -m "打卡结果 $(date +%Y-%m-%d)" || echo "无变化"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
