@@ -37,30 +37,40 @@ jobs:
         # 执行打卡脚本
         php checkin.php
     
-    - name: Debug PAT
-      env:
-        PAT_LEN: ${{ secrets.PAT }}
-      run: |
-        echo "PAT length: ${#PAT_LEN}"
-        echo "PAT first 4 chars: ${PAT_LEN:0:4}"
-        [ -z "$PAT_LEN" ] && echo "⚠️ PAT IS EMPTY!" || echo "✅ PAT is set"
-    
-    - name: 提交结果
+    - name: 提交结果（通过 GitHub API）
       env:
         PAT_TOKEN: ${{ secrets.PAT }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+        DATE=$(date +%Y-%m-%d)
+        RESULT_FILE="results/${DATE}.json"
         
         mkdir -p results
         
         if [ -f "checkin_result.json" ]; then
-          mv checkin_result.json "results/$(date +%Y-%m-%d).json"
+          mv checkin_result.json "$RESULT_FILE"
+          CONTENT=$(base64 -w0 "$RESULT_FILE")
+          
+          # 检查文件是否已存在
+          SHA=$(curl -sf -H "Authorization: token ${PAT_TOKEN}" \
+            "https://api.github.com/repos/Limerence726/zjs-checkin/contents/${RESULT_FILE}?ref=main" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
+          
+          if [ -n "$SHA" ]; then
+            # 更新已有文件
+            curl -s -X PUT -H "Authorization: token ${PAT_TOKEN}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/Limerence726/zjs-checkin/contents/${RESULT_FILE}" \
+              -d "{\"message\":\"打卡结果 ${DATE}\",\"content\":\"${CONTENT}\",\"sha\":\"${SHA}\",\"branch\":\"main\"}"
+            echo "✅ 已更新 ${RESULT_FILE}"
+          else
+            # 创建新文件
+            curl -s -X PUT -H "Authorization: token ${PAT_TOKEN}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/Limerence726/zjs-checkin/contents/${RESULT_FILE}" \
+              -d "{\"message\":\"打卡结果 ${DATE}\",\"content\":\"${CONTENT}\",\"branch\":\"main\"}"
+            echo "✅ 已创建 ${RESULT_FILE}"
+          fi
+        else
+          echo "⚠️ 无打卡结果文件"
         fi
-        
-        git add results/
-        git commit -m "打卡结果 $(date +%Y-%m-%d)" || echo "无变化"
-        
-        echo "Using token length: ${#PAT_TOKEN}"
-        git push https://x-access-token:${PAT_TOKEN}@github.com/Limerence726/zjs-checkin.git HEAD:main
 
