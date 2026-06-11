@@ -37,21 +37,30 @@ jobs:
         # 执行打卡脚本
         php checkin.php
     
+    - name: Debug PAT
+      env:
+        PAT_LEN: ${{ secrets.PAT }}
+      run: |
+        echo "PAT length: ${#PAT_LEN}"
+        echo "PAT first 4 chars: ${PAT_LEN:0:4}"
+        [ -z "$PAT_LEN" ] && echo "⚠️ PAT IS EMPTY!" || echo "✅ PAT is set"
+    
     - name: 提交结果
+      env:
+        PAT_TOKEN: ${{ secrets.PAT }}
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         
-        # 创建结果目录
         mkdir -p results
         
-        # 移动结果文件
         if [ -f "checkin_result.json" ]; then
           mv checkin_result.json "results/$(date +%Y-%m-%d).json"
         fi
         
-        # 提交并推送
         git add results/
         git commit -m "打卡结果 $(date +%Y-%m-%d)" || echo "无变化"
-        git push https://x-access-token:${{ secrets.PAT }}@github.com/Limerence726/zjs-checkin.git HEAD:main
+        
+        echo "Using token length: ${#PAT_TOKEN}"
+        git push https://x-access-token:${PAT_TOKEN}@github.com/Limerence726/zjs-checkin.git HEAD:main
 
