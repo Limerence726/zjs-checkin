@@ -53,6 +53,6 @@ jobs:
         # 提交并推送
         git add results/
         git commit -m "打卡结果 $(date +%Y-%m-%d)" || echo "无变化"
-        git push
+        git push https://x-access-token:${{ secrets.PAT }}@github.com/Limerence726/zjs-checkin.git HEAD:main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
