@@ -1,6 +1,6 @@
 {
     "date": "2026-06-12",
-    "time": "2026-06-12 00:27:03",
+    "time": "2026-06-12 01:58:30",
     "version": "v2",
     "api_base": "https:\/\/api.zjsnews.cn",
     "success": true,
@@ -8,7 +8,7 @@
     "results": [
         {
             "phone": "18811526177",
-            "time": "2026-06-12 00:27:03",
+            "time": "2026-06-12 01:58:30",
             "login": true,
             "sign": true,
             "articles": [
@@ -26,7 +26,7 @@
                 {
                     "news_id": "8979562961289224504",
                     "read": true,
-                    "integral": true,
+                    "integral": false,
                     "favorite": true,
                     "share_wx": true,
                     "share_pyq": true,
@@ -69,7 +69,7 @@
                 }
             ],
             "error": null,
-            "sign_msg": "signStatus=0, integral=1"
+            "sign_msg": "signStatus=1, integral=?"
         }
     ]
 }
