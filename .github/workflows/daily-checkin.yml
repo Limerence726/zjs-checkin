@@ -29,12 +29,9 @@ jobs:
     
     - name: 执行打卡
       env:
-        ACCOUNTS_JSON: ${{ secrets.ACCOUNTS_JSON }}
+        PAT_TOKEN: ${{ secrets.PAT }}
       run: |
-        # 写入账号配置
-        echo "$ACCOUNTS_JSON" > accounts.json
-        
-        # 执行打卡脚本
+        # 执行打卡脚本（从 GitHub API 读取 accounts_status.json）
         php checkin.php
     
     - name: 提交结果（通过 GitHub API）
@@ -73,4 +70,3 @@ jobs:
         else
           echo "⚠️ 无打卡结果文件"
         fi
-
