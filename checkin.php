@@ -166,6 +166,47 @@ function apiPostTotal(string $path, array $body, string $token, string $desc = '
 // ==================== 业务逻辑 ====================
 
 /**
+ * 密码登录：GET /user/loginByPwd（pwd_hash 版本，跳过内部 md5）
+ * pwd_hash 已经是 md5(password)，直接传给紫金山接口
+ */
+function zjsLoginWithHash(string $mobile, string $pwdHash): array {
+    $params = [
+        'appid'  => APPID,
+        'mobile' => $mobile,
+        'pwd'    => $pwdHash,  // 已经是 MD5，不再二次 md5
+    ];
+    $url = buildSignedUrl(API_BASE . '/user/loginByPwd', $params);
+    $headers = ['User-Agent: ' . UA_OKHTTP];
+    $resp = curlGet($url, $headers);
+
+    if ($resp === null) {
+        return ['success' => false, 'msg' => '请求失败'];
+    }
+    $json = json_decode($resp, true);
+    if ($json === null) {
+        return ['success' => false, 'msg' => 'JSON解析失败'];
+    }
+    if (($json['code'] ?? 0) != 1 || empty($json['data']['token'])) {
+        return ['success' => false, 'msg' => $json['msg'] ?? '登录失败'];
+    }
+
+    $token = $json['data']['token'];
+    $userId = '';
+
+    // 获取 user_id
+    $userInfo = zjsGetUserId($token);
+    if ($userInfo) {
+        $userId = $userInfo;
+    }
+
+    return [
+        'success' => true,
+        'token'   => $token,
+        'user_id' => $userId,
+    ];
+}
+
+/**
  * 密码登录：GET /user/loginByPwd
  */
 function zjsLogin(string $mobile, string $password): array {
@@ -446,25 +487,72 @@ function zjsReadArticle(string $newsId, int $index, int $total, string $token, s
 
 // ==================== 主流程 ====================
 
-// 读取账号配置（优先从环境变量 ACCOUNTS_JSON，其次从文件）
-$accountsJson = getenv('ACCOUNTS_JSON');
-if (!empty($accountsJson)) {
-    $accounts = json_decode($accountsJson, true);
-} else {
-    $accountsFile = __DIR__ . '/accounts.json';
-    if (!file_exists($accountsFile)) {
-        die("错误：accounts.json 不存在且 ACCOUNTS_JSON 环境变量为空\n");
+// 从 GitHub API 读取 accounts_status.json（前端管理的数据源）
+$githubToken = getenv('PAT_TOKEN') ?: getenv('GITHUB_TOKEN') ?: '';
+$githubOwner = 'Limerence726';
+$githubRepo  = 'zjs-checkin';
+
+$accounts = [];
+$source = 'unknown';
+
+if (!empty($githubToken)) {
+    $apiUrl = "https://api.github.com/repos/{$githubOwner}/{$githubRepo}/contents/accounts_status.json";
+    $ch = curl_init($apiUrl);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 15,
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_HTTPHEADER => [
+            "Authorization: token {$githubToken}",
+            "User-Agent: ZJS-Checkin-Actions",
+            "Accept: application/vnd.github.v3+json",
+        ],
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($resp && $httpCode === 200) {
+        $json = json_decode($resp, true);
+        if (isset($json['content'])) {
+            $accounts = json_decode(base64_decode($json['content']), true) ?: [];
+            $source = 'accounts_status.json (GitHub API)';
+        }
     }
-    $accounts = json_decode(file_get_contents($accountsFile), true);
+}
+
+// Fallback: 从环境变量 ACCOUNTS_JSON 读取（兼容旧配置）
+if (empty($accounts)) {
+    $accountsJson = getenv('ACCOUNTS_JSON');
+    if (!empty($accountsJson)) {
+        $accounts = json_decode($accountsJson, true);
+        $source = 'ACCOUNTS_JSON secret';
+    } else {
+        $accountsFile = __DIR__ . '/accounts.json';
+        if (file_exists($accountsFile)) {
+            $accounts = json_decode(file_get_contents($accountsFile), true);
+            $source = 'accounts.json file';
+        }
+    }
 }
 
 if (empty($accounts) || !is_array($accounts)) {
-    die("错误：账号列表为空或格式错误\n");
+    die("错误：账号列表为空。请在前端添加账号并开启自动打卡。\n");
+}
+
+// 只执行 enabled 的账号
+$enabledAccounts = array_filter($accounts, function($a) {
+    return !empty($a['enabled']);
+});
+
+if (empty($enabledAccounts)) {
+    die("提示：没有已开启自动打卡的账号。请在前端开启。\n");
 }
 
 echo "═══════════════════════════════════════════════════\n";
-echo "  紫金山新闻自动打卡 v2（api.zjsnews.cn）\n";
-echo "  账号数: " . count($accounts) . "\n";
+echo "  紫金山新闻自动打卡 v3（api.zjsnews.cn）\n";
+echo "  数据源: {$source}\n";
+echo "  总账号: " . count($accounts) . " | 已启用: " . count($enabledAccounts) . "\n";
 echo "  时间: " . date('Y-m-d H:i:s') . "\n";
 echo "═══════════════════════════════════════════════════\n\n";
 
@@ -472,11 +560,12 @@ $allResults = [];
 $currentDate = date('Y-m-d');
 $currentTime = date('Y-m-d H:i:s');
 
-foreach ($accounts as $index => $acc) {
+foreach ($enabledAccounts as $index => $acc) {
     $phone    = $acc['phone'] ?? '';
-    $password = $acc['password'] ?? '';
+    $pwdHash  = $acc['pwd_hash'] ?? '';  // MD5(password)，由前端 toggle 时存入
+    $password = $acc['password'] ?? '';  // 兼容旧格式 ACCOUNTS_JSON
 
-    if (empty($phone) || empty($password)) {
+    if (empty($phone) || (empty($pwdHash) && empty($password))) {
         echo "账号 #{$index} 信息不完整，跳过\n";
         continue;
     }
@@ -496,8 +585,17 @@ foreach ($accounts as $index => $acc) {
     ];
 
     // 1. 登录
+    // pwd_hash 是 MD5(password)，zjsLogin 内部会再做 md5($password)
+    // 所以如果有 pwd_hash，需要用它作为 password 参数（zjsLogin 内部 md5(pwd_hash) = md5(md5(password))）
+    // 但实际上紫金山登录接口的 pwd 参数就是 md5(password)，zjsLogin 内部不应该再 md5
+    // 所以直接把 pwd_hash 传给 zjsLogin，但需要跳过 zjsLogin 内部的 md5
     echo "\n🔑 登录中...\n";
-    $loginResult = zjsLogin($phone, $password);
+    if (!empty($pwdHash)) {
+        // pwd_hash = md5(password)，直接作为 pwd 参数，跳过 zjsLogin 的内部 md5
+        $loginResult = zjsLoginWithHash($phone, $pwdHash);
+    } else {
+        $loginResult = zjsLogin($phone, $password);
+    }
     if (!$loginResult['success']) {
         $accountResult['error'] = '登录失败: ' . ($loginResult['msg'] ?? '未知错误');
         echo "  ❌ " . $accountResult['error'] . "\n";
@@ -559,3 +657,4 @@ echo "📊 打卡完成\n";
 echo "  账号数: " . count($allResults) . "\n";
 echo "  结果文件: checkin_result.json\n";
 echo "═══════════════════════════════════════════════════\n";
+
