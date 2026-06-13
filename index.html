@@ -511,9 +511,8 @@ function renderArticleList(){
   // 加载更多按钮：根据后端hasMore字段或上次获取数量判断
   var loadMoreBtn=document.getElementById('loadMoreBtn');
   var lastFetchCount=AS._lastFetchCount||0;
-  // 显示加载更多：有文章 且 (上次获取>=pageSize 或 搜索中只显示部分)
-  var hasMore=lastFetchCount>=30;
-  loadMoreBtn.style.display=(AS.allArticles.length>0&&hasMore)?'block':'none';
+  // 只要上次有返回文章就显示加载更多（让用户主动探索下一页）
+  loadMoreBtn.style.display=(AS.allArticles.length>0&&lastFetchCount>0)?'block':'none';
 
   var countText=q?('匹配 '+filtered.length+' / 共 '+AS.allArticles.length+' 篇'):('共 '+AS.allArticles.length+' 篇');
   document.getElementById('articleCount').textContent=countText;
