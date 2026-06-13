@@ -6,46 +6,10 @@
 
 define('API_VERSION', 'v5.1-hidden-ch103'); // 版本标识，用于确认热铁盒是否更新
 
-// 频道映射（从 news/listNewsChannel API 获取的真实频道列表）
-// 频道ID使用紫金山API实际值，非旧版0-29编号
+// 精简频道列表（仅保留3个必要频道，减少API调用风险）
 define('ZJS_CHANNELS', json_encode([
-    ['id' => '2', 'name' => '头条'],
-    ['id' => '3', 'name' => '时政'],
-    ['id' => '148', 'name' => 'AI'],
-    ['id' => '2001', 'name' => '视频'],
-    ['id' => '132', 'name' => '经济'],
-    ['id' => '99', 'name' => '智库'],
-    ['id' => '6006', 'name' => '听语+'],
-    ['id' => '9', 'name' => '身边事'],
-    ['id' => '134', 'name' => '视觉南京'],
-    ['id' => '4', 'name' => '文旅'],
-    ['id' => '6004', 'name' => '区情'],
-    ['id' => '131', 'name' => '评弹'],
-    ['id' => '27', 'name' => '宜居'],
-    ['id' => '8', 'name' => '教育'],
-    ['id' => '7', 'name' => '掌上医生'],
-    ['id' => '6003', 'name' => '都市圈'],
+    ['id' => '2', 'name' => '主频道'],
     ['id' => '102', 'name' => '联播'],
-    ['id' => '104', 'name' => '宁观'],
-    ['id' => '124', 'name' => '财经'],
-    ['id' => '118', 'name' => '家庭'],
-    ['id' => '145', 'name' => '紫金银辉'],
-    ['id' => '6007', 'name' => '莱斯生活'],
-    ['id' => '30', 'name' => '金融'],
-    ['id' => '55', 'name' => '我们的节日'],
-    ['id' => '114', 'name' => '红云'],
-    ['id' => '31', 'name' => '汽车'],
-    ['id' => '106', 'name' => '周末+'],
-    ['id' => '125', 'name' => '企业服务'],
-    ['id' => '146', 'name' => '宁宠'],
-    ['id' => '127', 'name' => '资本圈'],
-    ['id' => '142', 'name' => '新健康'],
-    ['id' => '128', 'name' => '南京文化人才'],
-    ['id' => '112', 'name' => '南京城墙'],
-    ['id' => '137', 'name' => '党刊看点'],
-    ['id' => '101', 'name' => '电子报'],
-    ['id' => '121', 'name' => '专题'],
-    ['id' => '6005', 'name' => '紫金号'],
     ['id' => '103', 'name' => '战役备用'],  // 隐藏频道，不在listNewsChannel中返回
 ]));
 
@@ -516,7 +480,9 @@ switch ($action) {
             }
         }
         if ($token) {
-            $channels = getChannelsFromAPI($token);
+            // 已禁用动态频道获取，减少API调用风险
+            $channels = json_decode(ZJS_CHANNELS, true);
+            // $channels = getChannelsFromAPI($token);
         } else {
             $channels = json_decode(ZJS_CHANNELS, true);
         }
