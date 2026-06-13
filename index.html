@@ -320,7 +320,7 @@ async function doToggle(){
   var ne=!S.enabled;
   try{
     var fd=new FormData();
-    fd.append('phone',S.phone);fd.append('pwd',S.pwd);fd.append('enabled',ne);
+    fd.append('phone',S.phone);fd.append('pwd',S.pwd);fd.append('enabled',ne?'1':'0');
     var res=await fetch(API+'?action=toggle',{method:'POST',body:fd});
     var d=await res.json();
     if(d.error){alert('保存失败: '+d.error);return}
@@ -434,6 +434,7 @@ async function loadArticles(reset){
     if(d.token){AS.token=d.token;AS.userId=d.userId||AS.userId}
 
     var newArticles=d.articles||[];
+    AS._lastFetchCount=newArticles.length;
     // 追加到已有列表（去重）
     var existIds={};AS.allArticles.forEach(function(a){existIds[a.news_id]=true});
     newArticles.forEach(function(a){if(!existIds[a.news_id]){AS.allArticles.push(a);existIds[a.news_id]=true}});
@@ -499,9 +500,10 @@ function renderArticleList(){
   }
   list.innerHTML=h;
 
-  // 加载更多按钮：如果本次返回了30条说明可能还有更多
+  // 加载更多按钮：根据后端hasMore字段或上次获取数量判断
   var loadMoreBtn=document.getElementById('loadMoreBtn');
-  loadMoreBtn.style.display=AS.allArticles.length>0&&AS.allArticles.length>=AS.currentPage*30?'block':'none';
+  var lastFetchCount=AS._lastFetchCount||0;
+  loadMoreBtn.style.display=AS.allArticles.length>0&&(lastFetchCount>=30)?'block':'none';
 
   var countText=q?('匹配 '+filtered.length+' / 共 '+AS.allArticles.length+' 篇'):('共 '+AS.allArticles.length+' 篇');
   document.getElementById('articleCount').textContent=countText;
