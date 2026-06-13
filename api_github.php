@@ -4,7 +4,30 @@
  * 部署在热铁盒
  */
 
-define('API_VERSION', 'v3.0-pwd-fix'); // 版本标识，用于确认热铁盒是否更新
+define('API_VERSION', 'v4.0-channel'); // 版本标识，用于确认热铁盒是否更新
+
+// 频道ID映射表
+define('ZJS_CHANNELS', json_encode([
+    ['id' => '2', 'name' => '推荐'],
+    ['id' => '1', 'name' => '热点'],
+    ['id' => '3', 'name' => '南京'],
+    ['id' => '6', 'name' => '江苏'],
+    ['id' => '21', 'name' => '天下'],
+    ['id' => '9', 'name' => '视频'],
+    ['id' => '10', 'name' => '经济'],
+    ['id' => '4', 'name' => '文体'],
+    ['id' => '7', 'name' => '健康'],
+    ['id' => '8', 'name' => '教育'],
+    ['id' => '16', 'name' => '房产'],
+    ['id' => '17', 'name' => '汽车'],
+    ['id' => '11', 'name' => '旅游'],
+    ['id' => '14', 'name' => '美食'],
+    ['id' => '15', 'name' => '茶座'],
+    ['id' => '12', 'name' => '党媒'],
+    ['id' => '13', 'name' => '评论'],
+    ['id' => '18', 'name' => '银发'],
+    ['id' => '19', 'name' => '专题'],
+]));
 
 // 全局错误处理
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -407,6 +430,11 @@ switch ($action) {
         ]);
         break;
     
+    case 'channels':
+        header('Content-Type: application/json; charset=utf-8');
+        echo ZJS_CHANNELS;
+        break;
+
     case 'fetch_articles':
         $phone = $input['phone'] ?? '';
         // 兼容两种参数名：pwd 和 password
@@ -415,6 +443,8 @@ switch ($action) {
         $userId = (string)($input['userId'] ?? '');
         $page = (string)max(1, (int)($input['page'] ?? 1));
         $pageSize = (string)min(50, max(1, (int)($input['pageSize'] ?? 30)));
+        // 频道ID，默认2（推荐）
+        $channelId = (string)($input['channel_id'] ?? '2');
 
         // 如果没有 token 则先登录获取
         if (!$token && $phone && $password) {
@@ -441,7 +471,7 @@ switch ($action) {
         $timestamp = (string)time();
         $articleParams = [
             'appid' => ZJS_APPID,
-            'channel_id' => '2',
+            'channel_id' => $channelId,
             'currentVersion' => '9.0.6',
             'deviceId' => ZJS_DEVICE_ID,
             'equipmentType' => 'iPhone16,1',
@@ -496,6 +526,7 @@ switch ($action) {
             'success' => true,
             'articles' => $articles,
             'hasMore' => count($articles) >= (int)$pageSize,
+            'channel_id' => $channelId,
             'token' => $token,
             'userId' => $userId ?? '',
         ], JSON_UNESCAPED_UNICODE);
@@ -509,7 +540,8 @@ switch ($action) {
                 'POST ?action=toggle {phone, password, enabled}',
                 'GET  ?action=status&phone=xxx',
                 'GET  ?action=monthly&phone=xxx&month=2026-06',
-                'POST ?action=fetch_articles {phone, password, token, page, pageSize}'
+                'GET  ?action=channels',
+                'POST ?action=fetch_articles {phone, password, token, page, pageSize, channel_id}'
             ]
         ]);
 }
