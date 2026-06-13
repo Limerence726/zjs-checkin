@@ -30,6 +30,7 @@ jobs:
     - name: 执行打卡
       env:
         PAT_TOKEN: ${{ secrets.PAT }}
+        TZ: Asia/Shanghai
       run: |
         # 执行打卡脚本（从 GitHub API 读取 accounts_status.json）
         php checkin.php
@@ -38,8 +39,9 @@ jobs:
       env:
         PAT_TOKEN: ${{ secrets.PAT }}
         GITHUB_TOKEN: ${{ secrets.PAT }}
+        TZ: Asia/Shanghai
       run: |
-        DATE=$(date +%Y-%m-%d)
+        DATE=$(TZ=Asia/Shanghai date +%Y-%m-%d)
         RESULT_FILE="results/${DATE}.json"
         
         mkdir -p results
