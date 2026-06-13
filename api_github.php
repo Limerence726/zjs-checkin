@@ -466,31 +466,22 @@ switch ($action) {
             break;
         }
 
-        // 解析 pageData 结构（对齐 Python v9）
+        // 解析 pageData — 只保留 news_type=0 的正常文章，过滤轮播(13)/栏目(4)/广告(11)/其他(99)
         $pageData = $articleData['data']['pageData'] ?? [];
         $articles = [];
         foreach ($pageData as $pd) {
             if (!is_array($pd)) continue;
-            if (isset($pd['news_id'])) {
-                // 单条文章
-                $articles[] = [
-                    'news_id' => (string)$pd['news_id'],
-                    'title' => $pd['title'] ?? '',
-                    'url' => ($pd['shareUrl'] ?? '') ?: ('https://zjsnews.zjsnews.cn/news/' . $pd['news_id']),
-                    'browse_count' => (int)($pd['browseCount'] ?? 0),
-                ];
-            } elseif (isset($pd['news_list']) && is_array($pd['news_list'])) {
-                // 分组下的文章列表
-                foreach ($pd['news_list'] as $item) {
-                    if (!is_array($item) || !isset($item['news_id'])) continue;
-                    $articles[] = [
-                        'news_id' => (string)$item['news_id'],
-                        'title' => $item['title'] ?? '',
-                        'url' => ($item['shareUrl'] ?? '') ?: ('https://zjsnews.zjsnews.cn/news/' . $item['news_id']),
-                        'browse_count' => (int)($item['browseCount'] ?? 0),
-                    ];
-                }
-            }
+            $nt = isset($pd['news_type']) ? (int)$pd['news_type'] : -1;
+            if ($nt !== 0) continue;
+            if (!isset($pd['news_id'])) continue;
+            $shareUrl = $pd['share_url'] ?? $pd['shareUrl'] ?? '';
+            $articles[] = [
+                'news_id' => (string)$pd['news_id'],
+                'title' => $pd['title'] ?? '',
+                'url' => $shareUrl ?: ('https://m.zjsnews.cn/news/' . $pd['news_id']),
+                'browse_count' => (int)($pd['browse_count'] ?? $pd['browseCount'] ?? 0),
+                'published_at' => $pd['published_at'] ?? '',
+            ];
         }
 
         echo json_encode([
