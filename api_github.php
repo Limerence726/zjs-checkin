@@ -216,7 +216,7 @@ $action = $_GET['action'] ?? '';
 switch ($action) {
     case 'login':
         $phone = $input['phone'] ?? '';
-        $password = $input['password'] ?? '';
+        $password = $input['pwd'] ?? $input['password'] ?? '';
         
         if (!$phone || !$password) {
             echo json_encode(['error' => '手机号和密码不能为空']);
@@ -250,7 +250,7 @@ switch ($action) {
     
     case 'toggle':
         $phone = $input['phone'] ?? '';
-        $password = $input['password'] ?? '';
+        $password = $input['pwd'] ?? $input['password'] ?? '';
         $enabled = $input['enabled'] ?? null;
         
         if (!$phone || !$password || $enabled === null) {
