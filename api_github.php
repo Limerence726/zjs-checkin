@@ -51,7 +51,8 @@ define('GITHUB_TOKEN', $_tk_parts[0].$_tk_parts[1]);
 define('GITHUB_OWNER', 'Limerence726');
 define('GITHUB_REPO', 'zjs-checkin');
 define('ZJS_API_BASE', 'https://api.zjsnews.cn');
-define('ZJS_APPID', 'ZJSNEWSAPP');
+define('ZJS_APPID', '21CA6ECAD76C3FD124');
+define('ZJS_DEVICE_ID', '744C916D-3E1C-431C-B5C6-B2171C19E66B');
 
 // 统一时区为北京时间
 date_default_timezone_set('Asia/Shanghai');
@@ -180,7 +181,32 @@ function zjsLogin($phone, $password) {
         return ['error' => '登录失败: ' . ($data['msg'] ?? '账号或密码错误'), 'code' => $data['code'] ?? -1];
     }
     
-    return ['success' => true, 'data' => $data['data']];
+    $result = ['success' => true, 'data' => $data['data']];
+    
+    // 通过 getUserInfo 获取 userId
+    $token = $data['data']['token'] ?? '';
+    if ($token) {
+        $ts = (string)time();
+        $infoParams = ['appid' => ZJS_APPID, 'timestamp' => $ts, 'token' => $token];
+        $infoParams['sign'] = zjsSign($infoParams);
+        $infoUrl = ZJS_API_BASE . '/user/getUserInfo?' . http_build_query($infoParams);
+        $ch2 = curl_init($infoUrl);
+        curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch2, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, [
+            'User-Agent: okhttp/4.9.3',
+            'token: ' . $token,
+        ]);
+        $infoResp = curl_exec($ch2);
+        curl_close($ch2);
+        $infoData = json_decode($infoResp, true);
+        if ($infoData && ($infoData['code'] ?? -1) == 1) {
+            $result['data']['userId'] = (string)($infoData['data']['user_id'] ?? '');
+        }
+    }
+    
+    return $result;
 }
 
 // ============ 路由处理 ============
@@ -391,8 +417,6 @@ switch ($action) {
                 echo json_encode([
                     'success' => false, 
                     'message' => '登录失败: ' . $loginResult['error'],
-                    'debug_phone_len' => strlen((string)$phone),
-                    'debug_pwd_len' => strlen((string)$password),
                 ]);
                 break;
             }
@@ -405,13 +429,20 @@ switch ($action) {
             break;
         }
 
-        // 获取文章列表
+        // 获取文章列表 — 对齐 Python v9 参数
+        $timestamp = (string)time();
         $articleParams = [
             'appid' => ZJS_APPID,
-            'token' => $token,
-            'userId' => (string)($userId ?? ''),
-            'page' => (string)$page,
+            'channel_id' => '2',
+            'currentVersion' => '9.0.6',
+            'deviceId' => ZJS_DEVICE_ID,
+            'equipmentType' => 'iPhone16,1',
+            'pageNumber' => (string)$page,
             'pageSize' => (string)$pageSize,
+            'screenSize' => '1125*2436',
+            'timestamp' => $timestamp,
+            'token' => $token,
+            'user_id' => (string)($userId ?? ''),
         ];
         $articleParams['sign'] = zjsSign($articleParams);
 
@@ -422,33 +453,50 @@ switch ($action) {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['User-Agent: Mozilla/5.0']);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ZjsNews/9.0.6',
+            'token: ' . $token,
+        ]);
         $articleResponse = curl_exec($ch);
         curl_close($ch);
 
         $articleData = json_decode($articleResponse, true);
         if (!$articleData || $articleData['code'] != 1) {
-            echo json_encode(['success' => false, 'message' => '获取文章失败: ' . ($articleData['msg'] ?? '未知错误'), 'token' => $token]);
+            echo json_encode(['success' => false, 'message' => '获取文章失败: ' . ($articleData['msg'] ?? '未知错误')]);
             break;
         }
 
-        $newsList = $articleData['data']['newsList'] ?? $articleData['data'] ?? [];
-        if (isset($newsList['newsId'])) $newsList = [$newsList]; // 单条包装
-
+        // 解析 pageData 结构（对齐 Python v9）
+        $pageData = $articleData['data']['pageData'] ?? [];
         $articles = [];
-        foreach ($newsList as $item) {
-            $articles[] = [
-                'news_id' => $item['newsId'] ?? $item['id'] ?? '',
-                'title' => $item['title'] ?? '',
-                'url' => ($item['shareUrl'] ?? '') ?: ('https://zjsnews.zjsnews.cn/news/' . ($item['newsId'] ?? $item['id'] ?? '')),
-                'browse_count' => (int)($item['browseCount'] ?? $item['browse_count'] ?? 0),
-            ];
+        foreach ($pageData as $pd) {
+            if (!is_array($pd)) continue;
+            if (isset($pd['news_id'])) {
+                // 单条文章
+                $articles[] = [
+                    'news_id' => (string)$pd['news_id'],
+                    'title' => $pd['title'] ?? '',
+                    'url' => ($pd['shareUrl'] ?? '') ?: ('https://zjsnews.zjsnews.cn/news/' . $pd['news_id']),
+                    'browse_count' => (int)($pd['browseCount'] ?? 0),
+                ];
+            } elseif (isset($pd['news_list']) && is_array($pd['news_list'])) {
+                // 分组下的文章列表
+                foreach ($pd['news_list'] as $item) {
+                    if (!is_array($item) || !isset($item['news_id'])) continue;
+                    $articles[] = [
+                        'news_id' => (string)$item['news_id'],
+                        'title' => $item['title'] ?? '',
+                        'url' => ($item['shareUrl'] ?? '') ?: ('https://zjsnews.zjsnews.cn/news/' . $item['news_id']),
+                        'browse_count' => (int)($item['browseCount'] ?? 0),
+                    ];
+                }
+            }
         }
 
         echo json_encode([
             'success' => true,
             'articles' => $articles,
-            'hasMore' => count($articles) >= $pageSize,
+            'hasMore' => count($articles) >= (int)$pageSize,
             'token' => $token,
             'userId' => $userId ?? '',
         ], JSON_UNESCAPED_UNICODE);
