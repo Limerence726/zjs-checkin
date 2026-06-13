@@ -92,42 +92,18 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 .ce-ok{color:#fff;background:var(--accent);border-radius:50%;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:600}
 .ce-now{color:var(--accent);border:1.5px solid var(--accent);border-radius:50%;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;margin:0 auto;font-size:14px;font-weight:600}
 
-/* ── 文章列表区 ── */
-.article-search{width:100%;height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;margin-bottom:10px}
-.article-search:focus{border-color:var(--accent)}
-.article-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px}
-.article-toolbar label{display:flex;align-items:center;gap:4px;font-weight:500;cursor:pointer;color:var(--text2)}
-.article-toolbar button{padding:4px 10px;font-size:12px;background:var(--card);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer}
-.article-toolbar button:active{opacity:0.7}
-
-.article-list{max-height:420px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.article-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
-.article-item:last-child{border-bottom:none}
-.article-item input[type=checkbox]{flex-shrink:0;width:18px;height:18px;accent-color:var(--accent)}
-.article-info{flex:1;min-width:0}
-.article-title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
-.article-meta{font-size:12px;color:var(--text3);margin-top:2px}
-.article-meta .browse-up{color:var(--accent);font-weight:600}
-
-.load-more-btn{text-align:center;padding:10px;cursor:pointer;color:var(--text3);font-size:13px;border-top:1px solid var(--border)}
-.load-more-btn:active{color:var(--accent)}
-
-.empty-msg{text-align:center;padding:30px 0;color:var(--text3);font-size:14px}
-
-.sel-info{font-size:12px;color:var(--text3)}
-
 /* ── 链接刷新区 ── */
-.refresh-settings{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.refresh-settings .rfield{flex:1;min-width:90px}
-.refresh-settings .rfield label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
-.refresh-settings .rfield input{width:100%;height:40px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none}
-.refresh-settings .rfield input:focus{border-color:var(--accent)}
-
 .refresh-links-area{margin-bottom:14px}
 .refresh-links-area label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
 .refresh-links-area textarea{width:100%;height:90px;padding:10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;resize:vertical;line-height:1.5}
 .refresh-links-area textarea:focus{border-color:var(--accent)}
 .refresh-links-area textarea::placeholder{color:var(--text3)}
+
+.refresh-settings{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.refresh-settings .rfield{flex:1;min-width:90px}
+.refresh-settings .rfield label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.refresh-settings .rfield input{width:100%;height:40px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none}
+.refresh-settings .rfield input:focus{border-color:var(--accent)}
 
 .refresh-actions{display:flex;gap:8px;margin-bottom:14px}
 .btn-r{height:40px;padding:0 18px;font-size:14px;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:opacity 0.15s,transform 0.06s}
@@ -136,7 +112,6 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 .btn-r.primary{background:var(--accent);color:#fff}
 .btn-r.secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
 
-/* 进度区 */
 .progress-wrap{display:none;margin-top:14px}
 .progress-bar{width:100%;height:22px;background:var(--bg);border-radius:11px;position:relative;overflow:hidden}
 .progress-fill{height:100%;background:var(--accent);border-radius:11px;width:0%;transition:width 0.3s}
@@ -151,6 +126,33 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 .link-detail-table th{background:var(--bg);padding:8px 6px;text-align:left;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
 .link-detail-table td{padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2)}
 .link-detail-table td:first-child{color:var(--text);font-weight:500;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── 文章列表区 ── */
+.article-search{width:100%;height:40px;padding:0 12px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;margin-bottom:10px}
+.article-search:focus{border-color:var(--accent)}
+.article-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px}
+.article-toolbar label{display:flex;align-items:center;gap:4px;font-weight:500;cursor:pointer;color:var(--text2)}
+.article-toolbar button{padding:4px 10px;font-size:12px;background:var(--card);color:var(--text2);border:1px solid var(--border);border-radius:6px;cursor:pointer}
+.article-toolbar button:active{opacity:0.7}
+
+.article-list{max-height:480px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.article-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.article-item:last-child{border-bottom:none}
+.article-item input[type=checkbox]{flex-shrink:0;width:18px;height:18px;accent-color:var(--accent)}
+.article-info{flex:1;min-width:0}
+.article-title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4}
+.article-meta{font-size:12px;color:var(--text3);margin-top:2px;display:flex;gap:8px;align-items:center}
+.browse-count{font-weight:500}
+.browse-up{color:var(--accent);font-weight:600;transition:color 0.3s}
+
+.page-nav{display:flex;justify-content:center;align-items:center;gap:16px;padding:14px 0 4px;font-size:14px;color:var(--text2)}
+.page-nav button{height:36px;padding:0 16px;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);cursor:pointer}
+.page-nav button:active{opacity:0.7}
+.page-nav button:disabled{opacity:0.35;cursor:not-allowed}
+.page-nav .page-info{font-weight:600;color:var(--text)}
+
+.sel-info{font-size:12px;color:var(--text3)}
+.empty-msg{text-align:center;padding:30px 0;color:var(--text3);font-size:14px}
 </style>
 </head>
 <body>
@@ -213,26 +215,7 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
     <div id="calbox"><div style="text-align:center;padding:28px 0;color:var(--text3)">加载中...</div></div>
   </div>
 
-  <!-- 今日文章 -->
-  <div class="card">
-    <div class="section-header">
-      <h3>今日文章 <span id="articleCount" style="color:var(--text3);font-weight:400;font-size:12px">加载中</span></h3>
-    </div>
-    <input type="search" class="article-search" id="articleSearchInput" placeholder="搜索文章标题..." oninput="onArticleSearch()">
-    <div class="article-toolbar">
-      <label><input type="checkbox" id="selectAllChk" onchange="toggleSelectAll()"> 全选</label>
-      <button onclick="invertSelection()">反选</button>
-      <span style="flex:1"></span>
-      <span class="sel-info" id="selInfo">已选 0</span>
-      <button onclick="loadArticles(true)">重新获取</button>
-    </div>
-    <div class="article-list" id="articleList">
-      <div class="empty-msg">正在获取文章...</div>
-    </div>
-    <div class="load-more-btn" id="loadMoreBtn" onclick="loadMoreArticles()" style="display:none">加载更多</div>
-  </div>
-
-  <!-- 链接刷新工具 -->
+  <!-- 链接刷新工具（在文章列表上方） -->
   <div class="card">
     <div class="section-header">
       <h3>链接刷新</h3>
@@ -240,7 +223,7 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 
     <div class="refresh-links-area">
       <label>链接列表（每行一个）</label>
-      <textarea id="refreshLinks" placeholder="https://example.com/page1&#10;https://example.com/page2&#10;&#10;也可在上方勾选文章，自动加入刷新队列"></textarea>
+      <textarea id="refreshLinks" placeholder="https://example.com/page1&#10;https://example.com/page2&#10;&#10;也可在下方勾选文章，自动加入刷新队列"></textarea>
     </div>
 
     <div class="refresh-settings">
@@ -263,7 +246,6 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
       <button class="btn-r secondary" id="stopBtn" onclick="stopRefresh()" disabled>停止</button>
     </div>
 
-    <!-- 进度区 -->
     <div class="progress-wrap" id="progressWrap">
       <div class="progress-bar">
         <div class="progress-fill" id="progressFill"></div>
@@ -279,6 +261,29 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
         <thead><tr><th>链接</th><th>状态</th><th>进度</th><th>成功</th><th>失败</th></tr></thead>
         <tbody id="linksTableBody"></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- 今日文章（在刷新工具下方） -->
+  <div class="card">
+    <div class="section-header">
+      <h3>今日文章 <span id="articleCount" style="color:var(--text3);font-weight:400;font-size:12px">加载中</span></h3>
+    </div>
+    <input type="search" class="article-search" id="articleSearchInput" placeholder="搜索文章标题..." oninput="onArticleSearch()">
+    <div class="article-toolbar">
+      <label><input type="checkbox" id="selectAllChk" onchange="toggleSelectAll()"> 全选</label>
+      <button onclick="invertSelection()">反选</button>
+      <button onclick="addSelectedToRefresh()">加入刷新</button>
+      <span style="flex:1"></span>
+      <span class="sel-info" id="selInfo">已选 0</span>
+    </div>
+    <div class="article-list" id="articleList">
+      <div class="empty-msg">正在获取文章...</div>
+    </div>
+    <div class="page-nav" id="pageNav" style="display:none">
+      <button id="prevBtn" onclick="prevPage()">上一页</button>
+      <span class="page-info" id="pageInfo">1 / 1</span>
+      <button id="nextBtn" onclick="nextPage()">下一页</button>
     </div>
   </div>
 
@@ -317,7 +322,7 @@ async function doLogin(){
       document.getElementById('maincard').style.display='block';
       updateSW();updateML();loadStatus();loadCal();
       if(S.token){AS.token=S.token;AS.userId=S.userId}
-      loadArticles(true);
+      loadArticles();
     }
   }catch(e){showErr('网络错误: '+e.message)}
   finally{btn.disabled=false;btn.textContent='登 录'}
@@ -325,7 +330,7 @@ async function doLogin(){
 
 function doLogout(){
   S.phone='';S.pwd='';S.enabled=false;S.token='';S.userId='';
-  AS.token='';AS.userId='';
+  AS.token='';AS.userId='';AS.currentPage=1;AS.articles=[];
   document.getElementById('logincard').style.display='block';
   document.getElementById('maincard').style.display='none';
   document.getElementById('phone').value='';document.getElementById('pwd').value='';
@@ -419,62 +424,75 @@ async function loadCal(){
   }catch(e){box.innerHTML='<div style="text-align:center;padding:28px 0;color:var(--text3)">加载失败</div>'}
 }
 
-// ── 文章列表 ──
-var AS={articles:[],articlePage:1,articleHasMore:true,selectedIds:{},searchQuery:'',token:'',userId:''};
-var _browseTimer=null;
+// ── 文章列表（翻页模式） ──
+var AS={
+  articles:[],       // 当前页文章
+  currentPage:1,
+  totalPages:1,
+  totalCount:0,
+  selectedIds:{},
+  searchQuery:'',
+  token:'',
+  userId:'',
+  _browseTimer:null,
+  _isLoading:false
+};
 
 function escHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function fmtNum(n){return n>=10000?(n/10000).toFixed(1)+'w':n>=1000?(n/1000).toFixed(1)+'k':String(n)}
 
-async function loadArticles(reset){
+async function loadArticles(){
+  if(AS._isLoading)return;
+  AS._isLoading=true;
   var list=document.getElementById('articleList');
-  if(reset){
-    AS.articles=[];AS.articlePage=1;AS.articleHasMore=true;AS.selectedIds={};AS.searchQuery='';
-    document.getElementById('articleSearchInput').value='';
-    list.innerHTML='<div class="empty-msg">正在获取文章...</div>';
-  }
+  list.innerHTML='<div class="empty-msg">正在获取文章...</div>';
+
   try{
     var fd=new FormData();
     fd.append('phone',S.phone);
     if(AS.token){fd.append('token',AS.token);fd.append('userId',AS.userId)}
     else{fd.append('pwd',S.pwd)}
-    fd.append('page',String(AS.articlePage));fd.append('pageSize','30');
+    fd.append('page',String(AS.currentPage));fd.append('pageSize','30');
 
     var res=await fetch(API+'?action=fetch_articles',{method:'POST',body:fd});
     var d=await res.json();
 
     if(!d.success){
       if(AS.token&&(d.message||'').indexOf('过期')!==-1){
-        AS.token='';AS.userId='';return loadArticles(reset);
+        AS.token='';AS.userId='';AS._isLoading=false;return loadArticles();
       }
-      if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:var(--red)">'+escHtml(d.message||'获取失败')+'</div>';
-      return;
+      list.innerHTML='<div class="empty-msg" style="color:var(--red)">'+escHtml(d.message||'获取失败')+'</div>';
+      AS._isLoading=false;return;
     }
 
     if(d.token){AS.token=d.token;AS.userId=d.userId||AS.userId}
-    var newArts=d.articles||[];
-    AS.articleHasMore=d.hasMore!==false&&newArts.length>=25;
+    AS.articles=d.articles||[];
+    AS.totalCount=AS.articles.length;
 
-    if(reset){AS.articles=newArts}
-    else{
-      var existIds={};AS.articles.forEach(function(a){existIds[a.news_id]=true});
-      newArts.forEach(function(a){if(!existIds[a.news_id])AS.articles.push(a)});
+    // 估算总页数：如果返回不满30条说明是最后一页
+    if(AS.articles.length<30){
+      AS.totalPages=AS.currentPage;
+    }else{
+      AS.totalPages=Math.max(AS.currentPage+1, AS.totalPages);
     }
 
-    if(AS.articles.length===0){list.innerHTML='<div class="empty-msg">暂无文章</div>';return}
-    renderArticleList();
+    if(AS.articles.length===0){
+      list.innerHTML='<div class="empty-msg">暂无文章</div>';
+      document.getElementById('pageNav').style.display='none';
+    }else{
+      renderArticleList();
+    }
   }catch(e){
-    if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:var(--red)">网络错误</div>';
+    list.innerHTML='<div class="empty-msg" style="color:var(--red)">网络错误</div>';
   }
+  AS._isLoading=false;
 }
 
-async function loadMoreArticles(){
-  AS.articlePage++;
-  var btn=document.getElementById('loadMoreBtn');
-  btn.textContent='加载中...';
-  await loadArticles(false);
-  btn.textContent=AS.articleHasMore?'加载更多':'已全部加载';
-  if(!AS.articleHasMore)btn.style.display='none';
+function prevPage(){
+  if(AS.currentPage>1){AS.currentPage--;loadArticles()}
+}
+function nextPage(){
+  AS.currentPage++;loadArticles();
 }
 
 // 实时刷新阅读量
@@ -484,7 +502,7 @@ async function refreshBrowseCounts(){
     fd.append('phone',S.phone);
     if(AS.token){fd.append('token',AS.token);fd.append('userId',AS.userId)}
     else{fd.append('pwd',S.pwd)}
-    fd.append('page','1');fd.append('pageSize','30');
+    fd.append('page',String(AS.currentPage));fd.append('pageSize','30');
 
     var res=await fetch(API+'?action=fetch_articles',{method:'POST',body:fd});
     var d=await res.json();
@@ -497,8 +515,8 @@ async function refreshBrowseCounts(){
         var old=a.browse_count;a.browse_count=map[a.news_id];
         var el=document.querySelector('[data-browse-id="'+a.news_id+'"]');
         if(el){
-          el.textContent=fmtNum(a.browse_count)+' 阅读';
-          if(a.browse_count-old>0){el.classList.add('browse-up');setTimeout(function(){el.classList.remove('browse-up')},3000)}
+          el.textContent=fmtNum(a.browse_count);
+          if(a.browse_count>old){el.classList.add('browse-up');setTimeout(function(){el.classList.remove('browse-up')},3000)}
         }
       }
     });
@@ -515,27 +533,30 @@ function renderArticleList(){
   else{
     filtered.forEach(function(a){
       var chk=AS.selectedIds[a.news_id]?'checked':'';
-      var browse=a.browse_count?fmtNum(a.browse_count)+' 阅读':'—';
+      var browse=a.browse_count?fmtNum(a.browse_count):'—';
       h+='<div class="article-item">'
        +'<input type="checkbox" data-id="'+a.news_id+'" '+chk+' onchange="toggleArticle(this)">'
        +'<div class="article-info">'
        +'<div class="article-title">'+escHtml(a.title)+'</div>'
-       +'<div class="article-meta"><span data-browse-id="'+a.news_id+'">'+browse+'</span></div>'
+       +'<div class="article-meta"><span class="browse-count" data-browse-id="'+a.news_id+'">'+browse+'</span></div>'
        +'</div></div>';
     });
   }
   list.innerHTML=h;
 
-  var moreBtn=document.getElementById('loadMoreBtn');
-  if(q){moreBtn.style.display='none'}
-  else{moreBtn.style.display=AS.articleHasMore?'block':'none';if(AS.articleHasMore)moreBtn.textContent='加载更多'}
+  // 翻页导航
+  var nav=document.getElementById('pageNav');
+  nav.style.display='flex';
+  document.getElementById('pageInfo').textContent=AS.currentPage+' / '+AS.totalPages;
+  document.getElementById('prevBtn').disabled=AS.currentPage<=1;
+  document.getElementById('nextBtn').disabled=AS.articles.length<30;
 
-  var countText=q?('匹配 '+filtered.length+' / 共 '+AS.articles.length+' 篇'):('共 '+AS.articles.length+' 篇');
+  var countText=q?('匹配 '+filtered.length+' / 共 '+AS.articles.length+' 篇'):(AS.totalCount>0?('共 '+AS.totalCount+' 篇'):'');
   document.getElementById('articleCount').textContent=countText;
   updateSelInfo();
 
-  // 启动阅读量轮询
-  if(!_browseTimer)_browseTimer=setInterval(refreshBrowseCounts,5000);
+  // 启动阅读量轮询（5秒）
+  if(!AS._browseTimer)AS._browseTimer=setInterval(refreshBrowseCounts,5000);
 }
 
 function toggleArticle(chk){
@@ -575,13 +596,26 @@ function updateSelInfo(){
   document.getElementById('selInfo').textContent='已选 '+Object.keys(AS.selectedIds).length+' 篇';
 }
 
+// 将选中文章加入刷新区
+function addSelectedToRefresh(){
+  var urls=[];
+  AS.articles.forEach(function(a){if(AS.selectedIds[a.news_id]&&a.url)urls.push(a.url)});
+  if(urls.length===0){alert('请先勾选文章');return}
+  var ta=document.getElementById('refreshLinks');
+  var existing=ta.value.trim();
+  var lines=existing?existing.split('\n'):[];
+  var seen={};lines.forEach(function(l){seen[l.trim()]=true});
+  urls.forEach(function(u){if(!seen[u]){lines.push(u);seen[u]=true}});
+  ta.value=lines.join('\n');
+  alert('已添加 '+urls.length+' 个链接到刷新队列');
+}
+
 // ── 链接刷新 ──
 var isRefreshing=false;
 var refreshStartTime=0;
 var refreshTasks=[];
 var progressInterval=null;
 
-// 恢复上次参数
 document.addEventListener('DOMContentLoaded',function(){
   var rpl=localStorage.getItem('rpl');if(rpl)document.getElementById('requestsPerLink').value=rpl;
   var dur=localStorage.getItem('dur');if(dur)document.getElementById('duration').value=dur;
@@ -594,27 +628,13 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 
-function isValidUrl(url){
-  try{var u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch(e){return false}
-}
-function getDomain(url){
-  try{return new URL(url).hostname}catch(e){return url.length>25?url.substring(0,25)+'...':url}
-}
-
-// 获取选中文章的URL
-function getSelectedArticleUrls(){
-  var urls=[];
-  AS.articles.forEach(function(a){if(AS.selectedIds[a.news_id]&&a.url)urls.push(a.url)});
-  return urls;
-}
+function isValidUrl(url){try{var u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch(e){return false}}
+function getDomain(url){try{return new URL(url).hostname}catch(e){return url.length>25?url.substring(0,25)+'...':url}}
 
 function startRefresh(){
-  // 合并手动链接 + 选中文章链接
-  var articleUrls=getSelectedArticleUrls();
   var manualText=document.getElementById('refreshLinks').value.trim();
   var allLinks=[];
 
-  if(articleUrls.length>0)allLinks=allLinks.concat(articleUrls);
   if(manualText){
     manualText.split('\n').forEach(function(line){
       var url=line.trim();
@@ -622,9 +642,8 @@ function startRefresh(){
     });
   }
 
-  if(allLinks.length===0){alert('请输入链接或在上方勾选文章');return}
+  if(allLinks.length===0){alert('请输入链接或点击下方"加入刷新"按钮');return}
 
-  // 去重
   var seen={};allLinks=allLinks.filter(function(u){if(seen[u])return false;seen[u]=true;return true});
 
   var requestsPerLink=parseInt(document.getElementById('requestsPerLink').value);
@@ -635,7 +654,6 @@ function startRefresh(){
   if(isNaN(duration)||duration<=0){alert('请输入有效时间');return}
   if(isNaN(maxWorkers)||maxWorkers<=0){alert('请输入有效并发数');return}
 
-  // 把合并后链接写回textarea
   document.getElementById('refreshLinks').value=allLinks.join('\n');
 
   isRefreshing=true;
@@ -665,31 +683,23 @@ function startRefresh(){
 
   startRefreshTasks(allLinks,requestsPerLink,duration,maxWorkers);
   progressInterval=setInterval(updateRefreshProgress,200);
-
-  // 启动阅读量轮询（刷新期间也看）
-  if(_browseTimer){clearInterval(_browseTimer)}
-  _browseTimer=setInterval(refreshBrowseCounts,5000);
 }
 
 function startRefreshTasks(links,requestsPerLink,duration,maxWorkers){
   var totalRequests=links.length*requestsPerLink;
-  var requestsPerSecond=totalRequests/duration;
   var batchSize=Math.min(maxWorkers,10);
-
   for(var i=0;i<links.length;i++){
-    refreshLink(links[i],requestsPerLink,batchSize,requestsPerSecond/links.length);
+    refreshLink(links[i],requestsPerLink,batchSize,requestsPerSecond=totalRequests/duration/links.length);
   }
 }
 
 async function refreshLink(url,totalRequests,batchSize,requestsPerSecond){
   var completed=0;
   var task=refreshTasks.find(function(t){return t.url===url});
-
   while(completed<totalRequests&&isRefreshing){
     var currentBatchSize=Math.min(batchSize,totalRequests-completed);
     var promises=[];
     for(var i=0;i<currentBatchSize;i++)promises.push(makeRefreshRequest(url));
-
     try{
       var results=await Promise.allSettled(promises);
       for(var j=0;j<results.length;j++){
@@ -700,21 +710,16 @@ async function refreshLink(url,totalRequests,batchSize,requestsPerSecond){
     }catch(e){
       for(var k=0;k<currentBatchSize;k++){task.failed++;task.completed++;completed++}
     }
-
     if(completed<totalRequests&&isRefreshing){
       var delay=Math.max(100,1000/requestsPerSecond);
       await new Promise(function(r){setTimeout(r,delay)});
     }
   }
-
   task.status=completed>=totalRequests?'完成':'中断';
 }
 
 async function makeRefreshRequest(url){
-  try{
-    await fetch(url,{method:'GET',mode:'no-cors',cache:'no-cache'});
-    return true;
-  }catch(e){return false}
+  try{await fetch(url,{method:'GET',mode:'no-cors',cache:'no-cache'});return true}catch(e){return false}
 }
 
 function stopRefresh(){
@@ -724,17 +729,14 @@ function stopRefresh(){
   for(var i=0;i<refreshTasks.length;i++){
     if(refreshTasks[i].status==='运行中')refreshTasks[i].status='中断';
   }
-  if(_browseTimer){clearInterval(_browseTimer);_browseTimer=null}
-  refreshBrowseCounts();
 }
 
 function updateRefreshProgress(){
   if(!isRefreshing&&refreshTasks.every(function(t){return t.status!=='运行中'})){
     clearInterval(progressInterval);
-    if(_browseTimer){clearInterval(_browseTimer);_browseTimer=null}
-    refreshBrowseCounts();
-    // 刷新结束后更新打卡状态
-    loadStatus();
+    document.getElementById('startBtn').disabled=false;
+    document.getElementById('stopBtn').disabled=true;
+    refreshBrowseCounts();loadStatus();
   }
 
   var totalCompleted=0,totalSuccess=0,totalFailed=0,totalRequests=0;
@@ -758,8 +760,7 @@ function updateRefreshProgress(){
   var rows=document.getElementById('linksTableBody').getElementsByTagName('tr');
   for(var j=0;j<refreshTasks.length;j++){
     var task=refreshTasks[j];
-    var row=rows[j];
-    if(!row)continue;
+    var row=rows[j];if(!row)continue;
     var tp=task.total>0?(task.completed/task.total)*100:0;
     row.cells[1].textContent=task.status;
     row.cells[2].textContent=tp.toFixed(1)+'%';
