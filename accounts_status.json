@@ -1,16 +1,16 @@
 [
-  {
-    "phone": "18811526177",
-    "pwd_hash": "69756dde40956cb12faa45ac25b28e61",
-    "enabled": false,
-    "created_at": "2026-06-12T13:20:40+08:00",
-    "updated_at": "2026-06-13T13:12:45+08:00"
-  },
-  {
-    "phone": "17851262308",
-    "pwd_hash": "69b24faae6e5bc8b573f353c63a41d61",
-    "enabled": true,
-    "created_at": "2026-06-12T14:54:47+08:00",
-    "updated_at": "2026-06-13T18:03:34+08:00"
-  }
+    {
+        "phone": "18811526177",
+        "pwd_hash": "69756dde40956cb12faa45ac25b28e61",
+        "enabled": false,
+        "created_at": "2026-06-12T13:20:40+08:00",
+        "updated_at": "2026-06-13T13:12:45+08:00"
+    },
+    {
+        "phone": "17851262308",
+        "pwd_hash": "69b24faae6e5bc8b573f353c63a41d61",
+        "enabled": true,
+        "created_at": "2026-06-12T14:54:47+08:00",
+        "updated_at": "2026-06-13T18:42:29+08:00"
+    }
 ]
