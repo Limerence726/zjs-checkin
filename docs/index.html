@@ -248,7 +248,10 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
     <div class="section-header">
       <h3>今日文章 <span id="articleCount" style="color:var(--text3);font-weight:400;font-size:12px">加载中</span></h3>
     </div>
-    <input type="search" class="article-search" id="articleSearchInput" placeholder="搜索文章标题..." oninput="onArticleSearch()">
+    <div class="article-toolbar" style="margin-bottom:8px">
+      <input type="search" class="article-search" id="articleSearchInput" placeholder="搜索文章标题..." oninput="onArticleSearch()" style="flex:1;margin:0">
+      <button onclick="loadArticles(true)" style="margin-left:8px;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:13px;cursor:pointer">刷新列表</button>
+    </div>
     <div class="article-toolbar">
       <label><input type="checkbox" id="selectAllChk" onchange="toggleSelectAll()"> 全选</label>
       <button onclick="invertSelection()">反选</button>
@@ -316,16 +319,21 @@ function updateSW(){
   else{sw.className='switch';t.textContent='已关闭';t.style.color='var(--text2)'}
 }
 
+var _toggleLock=false;
 async function doToggle(){
+  if(_toggleLock)return;_toggleLock=true;
   var ne=!S.enabled;
+  // 立即视觉反馈
+  S.enabled=ne;updateSW();
   try{
     var fd=new FormData();
     fd.append('phone',S.phone);fd.append('pwd',S.pwd);fd.append('enabled',ne?'1':'0');
     var res=await fetch(API+'?action=toggle',{method:'POST',body:fd});
     var d=await res.json();
-    if(d.error){alert('保存失败: '+d.error);return}
-    S.enabled=d.enabled;updateSW();
-  }catch(e){alert('网络错误，请重试')}
+    if(d.error){S.enabled=!ne;updateSW();showErr('保存失败: '+d.error)}
+    else{S.enabled=d.enabled;updateSW();hideErr()}
+  }catch(e){S.enabled=!ne;updateSW();showErr('网络错误，请重试')}
+  setTimeout(function(){_toggleLock=false},1000);
 }
 
 // ── 今日状态 ──
@@ -503,7 +511,9 @@ function renderArticleList(){
   // 加载更多按钮：根据后端hasMore字段或上次获取数量判断
   var loadMoreBtn=document.getElementById('loadMoreBtn');
   var lastFetchCount=AS._lastFetchCount||0;
-  loadMoreBtn.style.display=AS.allArticles.length>0&&(lastFetchCount>=30)?'block':'none';
+  // 显示加载更多：有文章 且 (上次获取>=pageSize 或 搜索中只显示部分)
+  var hasMore=lastFetchCount>=30;
+  loadMoreBtn.style.display=(AS.allArticles.length>0&&hasMore)?'block':'none';
 
   var countText=q?('匹配 '+filtered.length+' / 共 '+AS.allArticles.length+' 篇'):('共 '+AS.allArticles.length+' 篇');
   document.getElementById('articleCount').textContent=countText;
