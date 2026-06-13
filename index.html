@@ -15,6 +15,7 @@
   --accent-light:#f0faf6;
   --border:#e5e5ea;
   --radius:12px;
+  --red:#ff3b30;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
@@ -37,7 +38,7 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 .btn-login:active{opacity:0.85;transform:scale(0.98)}
 .btn-login:disabled{opacity:0.35;cursor:not-allowed;transform:none}
 
-.err-msg{text-align:center;font-size:14px;color:#ff3b30;margin-top:16px;display:none;font-weight:500}
+.err-msg{text-align:center;font-size:14px;color:var(--red);margin-top:16px;display:none;font-weight:500}
 .disclaimer{margin-top:48px;padding:20px 16px 0;border-top:1px solid var(--border)}
 .disclaimer p{font-size:12px;color:var(--text3);line-height:1.7;text-align:center}
 
@@ -114,6 +115,42 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
 .empty-msg{text-align:center;padding:30px 0;color:var(--text3);font-size:14px}
 
 .sel-info{font-size:12px;color:var(--text3)}
+
+/* ── 链接刷新区 ── */
+.refresh-settings{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.refresh-settings .rfield{flex:1;min-width:90px}
+.refresh-settings .rfield label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.refresh-settings .rfield input{width:100%;height:40px;padding:0 10px;font-size:14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none}
+.refresh-settings .rfield input:focus{border-color:var(--accent)}
+
+.refresh-links-area{margin-bottom:14px}
+.refresh-links-area label{display:block;font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px}
+.refresh-links-area textarea{width:100%;height:90px;padding:10px;font-size:13px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;resize:vertical;line-height:1.5}
+.refresh-links-area textarea:focus{border-color:var(--accent)}
+.refresh-links-area textarea::placeholder{color:var(--text3)}
+
+.refresh-actions{display:flex;gap:8px;margin-bottom:14px}
+.btn-r{height:40px;padding:0 18px;font-size:14px;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:opacity 0.15s,transform 0.06s}
+.btn-r:active{opacity:0.85;transform:scale(0.98)}
+.btn-r:disabled{opacity:0.35;cursor:not-allowed;transform:none}
+.btn-r.primary{background:var(--accent);color:#fff}
+.btn-r.secondary{background:var(--bg);color:var(--text);border:1px solid var(--border)}
+
+/* 进度区 */
+.progress-wrap{display:none;margin-top:14px}
+.progress-bar{width:100%;height:22px;background:var(--bg);border-radius:11px;position:relative;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:11px;width:0%;transition:width 0.3s}
+.progress-text{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text)}
+
+.refresh-stats{display:flex;gap:8px;margin-top:12px}
+.refresh-stats .rs{flex:1;text-align:center;padding:10px 6px;background:var(--bg);border-radius:8px}
+.refresh-stats .rs-v{font-size:18px;font-weight:700}
+.refresh-stats .rs-l{font-size:10px;color:var(--text2);margin-top:2px}
+
+.link-detail-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12px}
+.link-detail-table th{background:var(--bg);padding:8px 6px;text-align:left;font-weight:600;color:var(--text2);border-bottom:1px solid var(--border)}
+.link-detail-table td{padding:8px 6px;border-bottom:1px solid var(--border);color:var(--text2)}
+.link-detail-table td:first-child{color:var(--text);font-weight:500;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -193,6 +230,56 @@ body{font-family:-apple-system,"SF Pro Text","SF Pro Display","Helvetica Neue",s
       <div class="empty-msg">正在获取文章...</div>
     </div>
     <div class="load-more-btn" id="loadMoreBtn" onclick="loadMoreArticles()" style="display:none">加载更多</div>
+  </div>
+
+  <!-- 链接刷新工具 -->
+  <div class="card">
+    <div class="section-header">
+      <h3>链接刷新</h3>
+    </div>
+
+    <div class="refresh-links-area">
+      <label>链接列表（每行一个）</label>
+      <textarea id="refreshLinks" placeholder="https://example.com/page1&#10;https://example.com/page2&#10;&#10;也可在上方勾选文章，自动加入刷新队列"></textarea>
+    </div>
+
+    <div class="refresh-settings">
+      <div class="rfield">
+        <label>每链接次数</label>
+        <input type="number" id="requestsPerLink" value="1000" min="1">
+      </div>
+      <div class="rfield">
+        <label>完成时间(秒)</label>
+        <input type="number" id="duration" value="30" min="1">
+      </div>
+      <div class="rfield">
+        <label>并发线程</label>
+        <input type="number" id="maxWorkers" value="5" min="1">
+      </div>
+    </div>
+
+    <div class="refresh-actions">
+      <button class="btn-r primary" id="startBtn" onclick="startRefresh()">开始刷新</button>
+      <button class="btn-r secondary" id="stopBtn" onclick="stopRefresh()" disabled>停止</button>
+    </div>
+
+    <!-- 进度区 -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+        <div class="progress-text" id="progressPct">0%</div>
+      </div>
+      <div class="refresh-stats">
+        <div class="rs"><div class="rs-v" id="statSuccess">0</div><div class="rs-l">成功</div></div>
+        <div class="rs"><div class="rs-v" id="statFail">0</div><div class="rs-l">失败</div></div>
+        <div class="rs"><div class="rs-v" id="statElapsed">0s</div><div class="rs-l">用时</div></div>
+        <div class="rs"><div class="rs-v" id="statTotal">0%</div><div class="rs-l">总进度</div></div>
+      </div>
+      <table class="link-detail-table">
+        <thead><tr><th>链接</th><th>状态</th><th>进度</th><th>成功</th><th>失败</th></tr></thead>
+        <tbody id="linksTableBody"></tbody>
+      </table>
+    </div>
   </div>
 
 </div>
@@ -305,7 +392,6 @@ async function loadCal(){
     var d=await res.json(),s=d.summary||{};
     updateML();
 
-    // 月度统计：已打卡天数 / 总天数 / 打卡率
     var h='<div class="month-bar">';
     h+='<div class="ms"><div class="ms-n">'+(s.checkedDays||0)+'</div><div class="ms-l">已打卡</div></div>';
     h+='<div class="ms"><div class="ms-n">'+(s.totalDays||30)+'</div><div class="ms-l">总天数</div></div>';
@@ -361,7 +447,7 @@ async function loadArticles(reset){
       if(AS.token&&(d.message||'').indexOf('过期')!==-1){
         AS.token='';AS.userId='';return loadArticles(reset);
       }
-      if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:#ff3b30">'+escHtml(d.message||'获取失败')+'</div>';
+      if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:var(--red)">'+escHtml(d.message||'获取失败')+'</div>';
       return;
     }
 
@@ -378,7 +464,7 @@ async function loadArticles(reset){
     if(AS.articles.length===0){list.innerHTML='<div class="empty-msg">暂无文章</div>';return}
     renderArticleList();
   }catch(e){
-    if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:#ff3b30">网络错误</div>';
+    if(AS.articlePage===1)list.innerHTML='<div class="empty-msg" style="color:var(--red)">网络错误</div>';
   }
 }
 
@@ -487,6 +573,199 @@ function onArticleSearch(){
 
 function updateSelInfo(){
   document.getElementById('selInfo').textContent='已选 '+Object.keys(AS.selectedIds).length+' 篇';
+}
+
+// ── 链接刷新 ──
+var isRefreshing=false;
+var refreshStartTime=0;
+var refreshTasks=[];
+var progressInterval=null;
+
+// 恢复上次参数
+document.addEventListener('DOMContentLoaded',function(){
+  var rpl=localStorage.getItem('rpl');if(rpl)document.getElementById('requestsPerLink').value=rpl;
+  var dur=localStorage.getItem('dur');if(dur)document.getElementById('duration').value=dur;
+  var mw=localStorage.getItem('mw');if(mw)document.getElementById('maxWorkers').value=mw;
+  ['requestsPerLink','duration','maxWorkers'].forEach(function(id){
+    document.getElementById(id).addEventListener('change',function(){
+      var keys={requestsPerLink:'rpl',duration:'dur',maxWorkers:'mw'};
+      localStorage.setItem(keys[id],this.value);
+    });
+  });
+});
+
+function isValidUrl(url){
+  try{var u=new URL(url);return u.protocol==='http:'||u.protocol==='https:'}catch(e){return false}
+}
+function getDomain(url){
+  try{return new URL(url).hostname}catch(e){return url.length>25?url.substring(0,25)+'...':url}
+}
+
+// 获取选中文章的URL
+function getSelectedArticleUrls(){
+  var urls=[];
+  AS.articles.forEach(function(a){if(AS.selectedIds[a.news_id]&&a.url)urls.push(a.url)});
+  return urls;
+}
+
+function startRefresh(){
+  // 合并手动链接 + 选中文章链接
+  var articleUrls=getSelectedArticleUrls();
+  var manualText=document.getElementById('refreshLinks').value.trim();
+  var allLinks=[];
+
+  if(articleUrls.length>0)allLinks=allLinks.concat(articleUrls);
+  if(manualText){
+    manualText.split('\n').forEach(function(line){
+      var url=line.trim();
+      if(url&&isValidUrl(url))allLinks.push(url);
+    });
+  }
+
+  if(allLinks.length===0){alert('请输入链接或在上方勾选文章');return}
+
+  // 去重
+  var seen={};allLinks=allLinks.filter(function(u){if(seen[u])return false;seen[u]=true;return true});
+
+  var requestsPerLink=parseInt(document.getElementById('requestsPerLink').value);
+  var duration=parseInt(document.getElementById('duration').value);
+  var maxWorkers=parseInt(document.getElementById('maxWorkers').value);
+
+  if(isNaN(requestsPerLink)||requestsPerLink<=0){alert('请输入有效次数');return}
+  if(isNaN(duration)||duration<=0){alert('请输入有效时间');return}
+  if(isNaN(maxWorkers)||maxWorkers<=0){alert('请输入有效并发数');return}
+
+  // 把合并后链接写回textarea
+  document.getElementById('refreshLinks').value=allLinks.join('\n');
+
+  isRefreshing=true;
+  refreshStartTime=Date.now();
+  refreshTasks=[];
+
+  document.getElementById('startBtn').disabled=true;
+  document.getElementById('stopBtn').disabled=false;
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('progressFill').style.width='0%';
+  document.getElementById('progressPct').textContent='0%';
+  document.getElementById('statSuccess').textContent='0';
+  document.getElementById('statFail').textContent='0';
+  document.getElementById('statElapsed').textContent='0s';
+  document.getElementById('statTotal').textContent='0%';
+
+  var tbody=document.getElementById('linksTableBody');
+  tbody.innerHTML='';
+
+  for(var i=0;i<allLinks.length;i++){
+    var task={url:allLinks[i],domain:getDomain(allLinks[i]),total:requestsPerLink,completed:0,success:0,failed:0,status:'运行中'};
+    refreshTasks.push(task);
+    var row=document.createElement('tr');
+    row.innerHTML='<td>'+escHtml(task.domain)+'</td><td>运行中</td><td>0%</td><td>0</td><td>0</td>';
+    tbody.appendChild(row);
+  }
+
+  startRefreshTasks(allLinks,requestsPerLink,duration,maxWorkers);
+  progressInterval=setInterval(updateRefreshProgress,200);
+
+  // 启动阅读量轮询（刷新期间也看）
+  if(_browseTimer){clearInterval(_browseTimer)}
+  _browseTimer=setInterval(refreshBrowseCounts,5000);
+}
+
+function startRefreshTasks(links,requestsPerLink,duration,maxWorkers){
+  var totalRequests=links.length*requestsPerLink;
+  var requestsPerSecond=totalRequests/duration;
+  var batchSize=Math.min(maxWorkers,10);
+
+  for(var i=0;i<links.length;i++){
+    refreshLink(links[i],requestsPerLink,batchSize,requestsPerSecond/links.length);
+  }
+}
+
+async function refreshLink(url,totalRequests,batchSize,requestsPerSecond){
+  var completed=0;
+  var task=refreshTasks.find(function(t){return t.url===url});
+
+  while(completed<totalRequests&&isRefreshing){
+    var currentBatchSize=Math.min(batchSize,totalRequests-completed);
+    var promises=[];
+    for(var i=0;i<currentBatchSize;i++)promises.push(makeRefreshRequest(url));
+
+    try{
+      var results=await Promise.allSettled(promises);
+      for(var j=0;j<results.length;j++){
+        if(results[j].status==='fulfilled'&&results[j].value)task.success++;
+        else task.failed++;
+        task.completed++;completed++;
+      }
+    }catch(e){
+      for(var k=0;k<currentBatchSize;k++){task.failed++;task.completed++;completed++}
+    }
+
+    if(completed<totalRequests&&isRefreshing){
+      var delay=Math.max(100,1000/requestsPerSecond);
+      await new Promise(function(r){setTimeout(r,delay)});
+    }
+  }
+
+  task.status=completed>=totalRequests?'完成':'中断';
+}
+
+async function makeRefreshRequest(url){
+  try{
+    await fetch(url,{method:'GET',mode:'no-cors',cache:'no-cache'});
+    return true;
+  }catch(e){return false}
+}
+
+function stopRefresh(){
+  isRefreshing=false;
+  document.getElementById('startBtn').disabled=false;
+  document.getElementById('stopBtn').disabled=true;
+  for(var i=0;i<refreshTasks.length;i++){
+    if(refreshTasks[i].status==='运行中')refreshTasks[i].status='中断';
+  }
+  if(_browseTimer){clearInterval(_browseTimer);_browseTimer=null}
+  refreshBrowseCounts();
+}
+
+function updateRefreshProgress(){
+  if(!isRefreshing&&refreshTasks.every(function(t){return t.status!=='运行中'})){
+    clearInterval(progressInterval);
+    if(_browseTimer){clearInterval(_browseTimer);_browseTimer=null}
+    refreshBrowseCounts();
+    // 刷新结束后更新打卡状态
+    loadStatus();
+  }
+
+  var totalCompleted=0,totalSuccess=0,totalFailed=0,totalRequests=0;
+  for(var i=0;i<refreshTasks.length;i++){
+    totalCompleted+=refreshTasks[i].completed;
+    totalSuccess+=refreshTasks[i].success;
+    totalFailed+=refreshTasks[i].failed;
+    totalRequests+=refreshTasks[i].total;
+  }
+
+  var pct=totalRequests>0?(totalCompleted/totalRequests)*100:0;
+  var elapsed=((Date.now()-refreshStartTime)/1000);
+
+  document.getElementById('progressFill').style.width=pct.toFixed(1)+'%';
+  document.getElementById('progressPct').textContent=pct.toFixed(1)+'%';
+  document.getElementById('statSuccess').textContent=totalSuccess;
+  document.getElementById('statFail').textContent=totalFailed;
+  document.getElementById('statElapsed').textContent=elapsed.toFixed(0)+'s';
+  document.getElementById('statTotal').textContent=pct.toFixed(0)+'%';
+
+  var rows=document.getElementById('linksTableBody').getElementsByTagName('tr');
+  for(var j=0;j<refreshTasks.length;j++){
+    var task=refreshTasks[j];
+    var row=rows[j];
+    if(!row)continue;
+    var tp=task.total>0?(task.completed/task.total)*100:0;
+    row.cells[1].textContent=task.status;
+    row.cells[2].textContent=tp.toFixed(1)+'%';
+    row.cells[3].textContent=task.success;
+    row.cells[4].textContent=task.failed;
+  }
 }
 </script>
 </body>
