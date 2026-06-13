@@ -4,6 +4,8 @@
  * 部署在热铁盒
  */
 
+define('API_VERSION', 'v3.0-pwd-fix'); // 版本标识，用于确认热铁盒是否更新
+
 // 全局错误处理
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
     header('Content-Type: application/json; charset=utf-8');
@@ -214,6 +216,10 @@ function zjsLogin($phone, $password) {
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
+    case 'version':
+        echo json_encode(['version' => API_VERSION, 'time' => date('Y-m-d H:i:s')]);
+        break;
+
     case 'login':
         $phone = $input['phone'] ?? '';
         $password = $input['pwd'] ?? $input['password'] ?? '';
@@ -251,9 +257,11 @@ switch ($action) {
     case 'toggle':
         $phone = $input['phone'] ?? '';
         $password = $input['pwd'] ?? $input['password'] ?? '';
-        $enabled = $input['enabled'] ?? null;
+        $enabledRaw = $input['enabled'] ?? null;
+        // 安全转换：字符串 "false"/"0"/""/0 → false，其他 → true
+        $enabled = ($enabledRaw === 'false' || $enabledRaw === '0' || $enabledRaw === '' || $enabledRaw === 0 || $enabledRaw === false) ? false : (bool)$enabledRaw;
         
-        if (!$phone || !$password || $enabled === null) {
+        if (!$phone || !$password || $enabledRaw === null) {
             echo json_encode(['error' => '缺少参数']);
             break;
         }
