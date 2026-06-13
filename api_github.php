@@ -4,7 +4,7 @@
  * 部署在热铁盒
  */
 
-define('API_VERSION', 'v5.0-real-channels'); // 版本标识，用于确认热铁盒是否更新
+define('API_VERSION', 'v5.1-hidden-ch103'); // 版本标识，用于确认热铁盒是否更新
 
 // 频道映射（从 news/listNewsChannel API 获取的真实频道列表）
 // 频道ID使用紫金山API实际值，非旧版0-29编号
@@ -46,6 +46,7 @@ define('ZJS_CHANNELS', json_encode([
     ['id' => '101', 'name' => '电子报'],
     ['id' => '121', 'name' => '专题'],
     ['id' => '6005', 'name' => '紫金号'],
+    ['id' => '103', 'name' => '战役备用'],  // 隐藏频道，不在listNewsChannel中返回
 ]));
 
 // 动态频道列表缓存（10分钟过期）
