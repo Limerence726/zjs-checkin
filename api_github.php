@@ -4,30 +4,101 @@
  * 部署在热铁盒
  */
 
-define('API_VERSION', 'v4.0-channel'); // 版本标识，用于确认热铁盒是否更新
+define('API_VERSION', 'v5.0-real-channels'); // 版本标识，用于确认热铁盒是否更新
 
-// 频道ID映射表
+// 频道映射（从 news/listNewsChannel API 获取的真实频道列表）
+// 频道ID使用紫金山API实际值，非旧版0-29编号
 define('ZJS_CHANNELS', json_encode([
-    ['id' => '2', 'name' => '推荐'],
-    ['id' => '1', 'name' => '热点'],
-    ['id' => '3', 'name' => '南京'],
-    ['id' => '6', 'name' => '江苏'],
-    ['id' => '21', 'name' => '天下'],
-    ['id' => '9', 'name' => '视频'],
-    ['id' => '10', 'name' => '经济'],
-    ['id' => '4', 'name' => '文体'],
-    ['id' => '7', 'name' => '健康'],
+    ['id' => '2', 'name' => '头条'],
+    ['id' => '3', 'name' => '时政'],
+    ['id' => '148', 'name' => 'AI'],
+    ['id' => '2001', 'name' => '视频'],
+    ['id' => '132', 'name' => '经济'],
+    ['id' => '99', 'name' => '智库'],
+    ['id' => '6006', 'name' => '听语+'],
+    ['id' => '9', 'name' => '身边事'],
+    ['id' => '134', 'name' => '视觉南京'],
+    ['id' => '4', 'name' => '文旅'],
+    ['id' => '6004', 'name' => '区情'],
+    ['id' => '131', 'name' => '评弹'],
+    ['id' => '27', 'name' => '宜居'],
     ['id' => '8', 'name' => '教育'],
-    ['id' => '16', 'name' => '房产'],
-    ['id' => '17', 'name' => '汽车'],
-    ['id' => '11', 'name' => '旅游'],
-    ['id' => '14', 'name' => '美食'],
-    ['id' => '15', 'name' => '茶座'],
-    ['id' => '12', 'name' => '党媒'],
-    ['id' => '13', 'name' => '评论'],
-    ['id' => '18', 'name' => '银发'],
-    ['id' => '19', 'name' => '专题'],
+    ['id' => '7', 'name' => '掌上医生'],
+    ['id' => '6003', 'name' => '都市圈'],
+    ['id' => '102', 'name' => '联播'],
+    ['id' => '104', 'name' => '宁观'],
+    ['id' => '124', 'name' => '财经'],
+    ['id' => '118', 'name' => '家庭'],
+    ['id' => '145', 'name' => '紫金银辉'],
+    ['id' => '6007', 'name' => '莱斯生活'],
+    ['id' => '30', 'name' => '金融'],
+    ['id' => '55', 'name' => '我们的节日'],
+    ['id' => '114', 'name' => '红云'],
+    ['id' => '31', 'name' => '汽车'],
+    ['id' => '106', 'name' => '周末+'],
+    ['id' => '125', 'name' => '企业服务'],
+    ['id' => '146', 'name' => '宁宠'],
+    ['id' => '127', 'name' => '资本圈'],
+    ['id' => '142', 'name' => '新健康'],
+    ['id' => '128', 'name' => '南京文化人才'],
+    ['id' => '112', 'name' => '南京城墙'],
+    ['id' => '137', 'name' => '党刊看点'],
+    ['id' => '101', 'name' => '电子报'],
+    ['id' => '121', 'name' => '专题'],
+    ['id' => '6005', 'name' => '紫金号'],
 ]));
+
+// 动态频道列表缓存（10分钟过期）
+$channelsCache = null;
+$channelsCacheTime = 0;
+
+function getChannelsFromAPI($token) {
+    global $channelsCache, $channelsCacheTime;
+    // 10分钟缓存
+    if ($channelsCache && (time() - $channelsCacheTime) < 600) {
+        return $channelsCache;
+    }
+    $timestamp = (string)time();
+    $params = [
+        'APPID' => ZJS_APPID,
+        'biz' => 'zjsnews',
+        'channel_ids' => '1,2',
+        'currentVersion' => '9.0.6',
+        'deviceId' => ZJS_DEVICE_ID,
+        'equipmentType' => 'iPhone16,1',
+        'screenSize' => '3',
+        'timestamp' => $timestamp,
+        'token' => $token,
+    ];
+    $params['sign'] = zjsSign($params);
+    $qs = http_build_query($params);
+    $url = ZJS_API_BASE . '/news/listNewsChannel?' . $qs;
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15',
+        'token: ' . $token,
+    ]);
+    $resp = curl_exec($ch);
+    curl_close($ch);
+    $data = json_decode($resp, true);
+    if ($data && $data['code'] == 1 && is_array($data['data'])) {
+        $channels = [];
+        foreach ($data['data'] as $ch) {
+            $channels[] = [
+                'id' => (string)($ch['id'] ?? ''),
+                'name' => $ch['name'] ?? '',
+            ];
+        }
+        $channelsCache = $channels;
+        $channelsCacheTime = time();
+        return $channels;
+    }
+    // 失败则返回硬编码列表
+    return json_decode(ZJS_CHANNELS, true);
+}
 
 // 全局错误处理
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -432,7 +503,23 @@ switch ($action) {
     
     case 'channels':
         header('Content-Type: application/json; charset=utf-8');
-        echo ZJS_CHANNELS;
+        // 尝试动态获取，失败回退硬编码
+        $phone = $input['phone'] ?? $_GET['phone'] ?? '';
+        $password = $input['pwd'] ?? $input['password'] ?? $_GET['pwd'] ?? '';
+        $token = (string)($input['token'] ?? $_GET['token'] ?? '');
+        $userId = (string)($input['userId'] ?? $_GET['userId'] ?? '');
+        if (!$token && $phone && $password) {
+            $loginResult = zjsLogin((string)$phone, (string)$password);
+            if (!isset($loginResult['error'])) {
+                $token = (string)($loginResult['data']['token'] ?? '');
+            }
+        }
+        if ($token) {
+            $channels = getChannelsFromAPI($token);
+        } else {
+            $channels = json_decode(ZJS_CHANNELS, true);
+        }
+        echo json_encode($channels, JSON_UNESCAPED_UNICODE);
         break;
 
     case 'fetch_articles':
@@ -553,3 +640,4 @@ switch ($action) {
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Exception', 'message' => $e->getMessage(), 'file' => basename($e->getFile()), 'line' => $e->getLine()]);
 }
+
