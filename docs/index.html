@@ -492,58 +492,45 @@ https://example.com/page2"></textarea>
             var newsId = match ? match[1] : '';
             
             if (newsId) {
-                // 紫金山文章：前端直接POST到统计接口（用户IP，不暴露服务器）
-                var batchCount = batchSize;
-                var batches = Math.ceil(totalRequests / batchCount);
+                // 紫金山文章：用隐藏iframe加载文章页，触发完整JS链路（arrow.png追踪+addUserAction）
+                // 每次加载相当于一个真实用户访问，浏览量会增长（有1-2分钟缓存延迟）
+                var iframe = document.createElement('iframe');
+                iframe.style.cssText = 'width:1px;height:1px;border:none;position:fixed;left:-9999px;top:-9999px;';
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                document.body.appendChild(iframe);
                 
-                for (var b = 0; b < batches && isRefreshing; b++) {
-                    var remaining = totalRequests - completed;
-                    var thisBatch = Math.min(batchCount, remaining);
-                    
-                    // 并发上报 thisBatch 次（紫金山统计接口支持CORS，正常POST即可）
-                    var promises = [];
-                    for (var i = 0; i < thisBatch; i++) {
-                        var nowS = Math.floor(Date.now() / 1000);
-                        var stayS = 30 + Math.floor(Math.random() * 90); // 停留30-120秒
-                        promises.push(
-                            fetch('https://total.zjsnews.cn/cc/user/addUserAction', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    system: 'h5',
-                                    userId: 10000,
-                                    type: 0,
-                                    newsId: newsId,
-                                    startPageTime: nowS - stayS,
-                                    endPageTime: nowS
-                                })
-                            }).then(function(r) { return r.json(); }).then(function(d) { return d && d.code === 1; }).catch(function() { return false; })
-                        );
-                    }
+                for (var b = 0; b < totalRequests && isRefreshing; b++) {
+                    // 每次加随机参数避免缓存
+                    var cacheBuster = '?_t=' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+                    var articleUrl = 'https://m.zjsnews.cn/news/' + newsId + cacheBuster;
                     
                     try {
-                        var results = await Promise.allSettled(promises);
-                        for (var j = 0; j < results.length; j++) {
-                            if (results[j].status === 'fulfilled' && results[j].value) {
-                                task.success++;
-                            } else {
-                                task.failed++;
-                            }
-                            task.completed++;
-                            completed++;
-                        }
+                        // 设置iframe src加载文章页
+                        await new Promise(function(resolve) {
+                            var timer = setTimeout(resolve, 8000); // 最多等8秒
+                            iframe.onload = function() {
+                                clearTimeout(timer);
+                                // 等待1-3秒让JS执行完毕（arrow.png追踪+addUserAction）
+                                setTimeout(resolve, 1000 + Math.floor(Math.random() * 2000));
+                            };
+                            iframe.src = articleUrl;
+                        });
+                        task.success++;
                     } catch (error) {
-                        task.failed += thisBatch;
-                        task.completed += thisBatch;
-                        completed += thisBatch;
+                        task.failed++;
                     }
+                    task.completed++;
+                    completed++;
                     
-                    // 批次间隔
+                    // 间隔1-4秒，模拟真人节奏
                     if (completed < totalRequests && isRefreshing) {
-                        var delay = Math.max(100, 500 * batchCount / requestsPerSecond);
-                        await new Promise(resolve => setTimeout(resolve, delay));
+                        await new Promise(function(resolve) {
+                            setTimeout(resolve, 1000 + Math.floor(Math.random() * 3000));
+                        });
                     }
                 }
+                
+                document.body.removeChild(iframe);
             } else {
                 // 非紫金山链接：逐个请求
                 while (completed < totalRequests && isRefreshing) {
