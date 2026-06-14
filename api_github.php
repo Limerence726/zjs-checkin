@@ -4,7 +4,7 @@
  * 部署在热铁盒
  */
 
-define('API_VERSION', 'v5.1-hidden-ch103'); // 版本标识，用于确认热铁盒是否更新
+define('API_VERSION', 'v6.0-report-browse'); // 版本标识，新增阅读量上报功能
 
 // 精简频道列表（仅保留3个必要频道，减少API调用风险）
 define('ZJS_CHANNELS', json_encode([
@@ -498,7 +498,7 @@ switch ($action) {
         $page = (string)max(1, (int)($input['page'] ?? 1));
         $pageSize = (string)min(50, max(1, (int)($input['pageSize'] ?? 30)));
         // 频道ID，默认2（推荐）
-        $channelId = (string)($input['channel_id'] ?? '2');
+        $channelId = (string)($_GET['channel_id'] ?? $input['channel_id'] ?? '2');
 
         // 如果没有 token 则先登录获取
         if (!$token && $phone && $password) {
@@ -586,16 +586,145 @@ switch ($action) {
         ], JSON_UNESCAPED_UNICODE);
         break;
 
+    // 批量上报阅读量（前端刷阅读量专用）
+    case 'batch_report_browse':
+        $newsIds = $input['news_ids'] ?? $_GET['news_ids'] ?? '';
+        $count = max(1, min(500, (int)($input['count'] ?? $_GET['count'] ?? 1)));
+        
+        if (!$newsIds) {
+            echo json_encode(['success' => false, 'message' => '缺少 news_ids']);
+            break;
+        }
+        
+        // news_ids 可以是逗号分隔的字符串或 JSON 数组
+        $idList = is_array($newsIds) ? $newsIds : explode(',', (string)$newsIds);
+        $idList = array_filter(array_map('trim', $idList));
+        
+        if (empty($idList)) {
+            echo json_encode(['success' => false, 'message' => 'news_ids 为空']);
+            break;
+        }
+        
+        $successCount = 0;
+        $failCount = 0;
+        $now = time();
+        
+        foreach ($idList as $newsId) {
+            for ($i = 0; $i < $count; $i++) {
+                // 随机停留时长 30-120秒，模拟真实阅读
+                $duration = rand(30, 120);
+                $start = $now - $duration - rand(0, 10);
+                $end = $start + $duration;
+                
+                $payload = json_encode([
+                    'system' => 'h5',
+                    'userId' => 10000,
+                    'type' => 0,
+                    'newsId' => (string)$newsId,
+                    'startPageTime' => $start,
+                    'endPageTime' => $end
+                ]);
+                
+                $ch = curl_init('https://total.zjsnews.cn/cc/user/addUserAction');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json; charset=UTF-8',
+                    'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ZjsNews/9.0.6',
+                    'Referer: https://m.zjsnews.cn/news/' . $newsId,
+                    'Origin: https://m.zjsnews.cn',
+                ]);
+                $resp = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                
+                $rd = json_decode($resp, true);
+                if ($rd && ($rd['code'] ?? 0) == 1) {
+                    $successCount++;
+                } else {
+                    $failCount++;
+                }
+                
+                // 间隔 50-200ms，避免过快
+                usleep(rand(50000, 200000));
+            }
+        }
+        
+        echo json_encode([
+            'success' => true,
+            'message' => "上报完成: 成功{$successCount}次, 失败{$failCount}次",
+            'total' => $successCount + $failCount,
+            'success_count' => $successCount,
+            'fail_count' => $failCount
+        ], JSON_UNESCAPED_UNICODE);
+        break;
+
+    // 单篇阅读量上报
+    case 'report_browse':
+        $newsId = $input['news_id'] ?? $_GET['news_id'] ?? '';
+        $newsType = (int)($input['news_type'] ?? $_GET['news_type'] ?? 0);
+        $startPageTime = (int)($input['startPageTime'] ?? $_GET['startPageTime'] ?? 0);
+        $endPageTime = (int)($input['endPageTime'] ?? $_GET['endPageTime'] ?? 0);
+        
+        if (!$newsId) {
+            echo json_encode(['success' => false, 'message' => '缺少 news_id']);
+            break;
+        }
+        
+        // 如果没有传时间，自动生成模拟数据
+        if (!$startPageTime || !$endPageTime) {
+            $duration = rand(30, 120);
+            $endPageTime = time();
+            $startPageTime = $endPageTime - $duration;
+        }
+        
+        $payload = json_encode([
+            'system' => 'h5',
+            'userId' => 10000,
+            'type' => $newsType,
+            'newsId' => (string)$newsId,
+            'startPageTime' => $startPageTime,
+            'endPageTime' => $endPageTime
+        ]);
+        
+        $ch = curl_init('https://total.zjsnews.cn/cc/user/addUserAction');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 8);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json; charset=UTF-8',
+            'User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ZjsNews/9.0.6',
+            'Referer: https://m.zjsnews.cn/news/' . $newsId,
+            'Origin: https://m.zjsnews.cn',
+        ]);
+        $resp = curl_exec($ch);
+        curl_close($ch);
+        
+        $rd = json_decode($resp, true);
+        echo json_encode([
+            'success' => $rd && ($rd['code'] ?? 0) == 1,
+            'upstream' => $rd,
+            'news_id' => $newsId
+        ]);
+        break;
+
     default:
         echo json_encode([
-            'service' => '紫金山打卡平台 API',
+            'service' => '紫金山打卡平台 API v6',
             'endpoints' => [
                 'POST ?action=login  {phone, password}',
                 'POST ?action=toggle {phone, password, enabled}',
                 'GET  ?action=status&phone=xxx',
                 'GET  ?action=monthly&phone=xxx&month=2026-06',
                 'GET  ?action=channels',
-                'POST ?action=fetch_articles {phone, password, token, page, pageSize, channel_id}'
+                'POST ?action=fetch_articles {phone, password, token, page, pageSize, channel_id}',
+                'POST ?action=report_browse {news_id, news_type, startPageTime, endPageTime}',
+                'POST ?action=batch_report_browse {news_ids, count}'
             ]
         ]);
 }
