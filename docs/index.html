@@ -475,56 +475,35 @@ https://example.com/page2"></textarea>
         
         function startRefreshTasks(links, requestsPerLink, duration, maxWorkers) {
             const totalRequests = links.length * requestsPerLink;
-            const requestsPerSecond = totalRequests / duration;
-            const batchSize = Math.min(maxWorkers, 10);
+            // 每个请求之间的间隔（毫秒）
+            const intervalMs = Math.max(50, (duration * 1000) / totalRequests);
+            const concurrency = Math.min(maxWorkers, 5);
             
-            for (const link of links) {
-                refreshLink(link, requestsPerLink, batchSize, requestsPerSecond / links.length);
-            }
-        }
-        
-        async function refreshLink(url, totalRequests, batchSize, requestsPerSecond) {
-            let completed = 0;
-            const task = refreshTasks.find(t => t.url === url);
+            let sentCount = 0;
             
-            // 所有链接统一处理：no-cors GET 批量并发（原始方案，验证阅读量可增长）
-            while (completed < totalRequests && isRefreshing) {
-                var currentBatchSize = Math.min(batchSize, totalRequests - completed);
-                var promises = [];
+            function sendOne() {
+                if (!isRefreshing || sentCount >= totalRequests) return;
                 
-                for (var i = 0; i < currentBatchSize; i++) {
-                    promises.push(makeRequest(url));
-                }
+                // 轮询分配到各链接
+                var linkIdx = sentCount % links.length;
+                var task = refreshTasks[linkIdx];
+                makeRequest(links[linkIdx]).then(function(ok) {
+                    if (ok) task.success++;
+                    else task.failed++;
+                    task.completed++;
+                });
+                sentCount++;
                 
-                try {
-                    var results = await Promise.allSettled(promises);
-                    for (var j = 0; j < results.length; j++) {
-                        if (results[j].status === 'fulfilled' && results[j].value) {
-                            task.success++;
-                        } else {
-                            task.failed++;
-                        }
-                        task.completed++;
-                        completed++;
-                    }
-                } catch (error) {
-                    for (var k = 0; k < currentBatchSize; k++) {
-                        task.failed++;
-                        task.completed++;
-                        completed++;
-                    }
-                }
-                
-                if (completed < totalRequests && isRefreshing) {
-                    var delay = Math.max(100, 1000 / requestsPerSecond);
-                    await new Promise(function(resolve) { setTimeout(resolve, delay); });
+                if (sentCount < totalRequests && isRefreshing) {
+                    // 并发槽：同时放concurrency个请求，间隔均匀
+                    var gap = sentCount % concurrency === 0 ? intervalMs * concurrency : Math.min(intervalMs, 100);
+                    setTimeout(sendOne, gap);
                 }
             }
             
-            if (completed >= totalRequests) {
-                task.status = '完成';
-            } else {
-                task.status = '中断';
+            // 启动concurrency个并行流
+            for (var s = 0; s < concurrency; s++) {
+                setTimeout(sendOne, s * intervalMs);
             }
         }
         
