@@ -257,17 +257,17 @@ https://example.com/page2"></textarea>
         <div class="settings">
             <div class="form-group">
                 <label for="requestsPerLink">每个链接刷新次数:</label>
-                <input type="number" id="requestsPerLink" value="100" min="1">
+                <input type="number" id="requestsPerLink" value="1000" min="1">
             </div>
             
             <div class="form-group">
                 <label for="duration">完成时间 (秒):</label>
-                <input type="number" id="duration" value="120" min="1">
+                <input type="number" id="duration" value="60" min="1">
             </div>
             
             <div class="form-group">
                 <label for="maxWorkers">并发线程数:</label>
-                <input type="number" id="maxWorkers" value="5" min="1">
+                <input type="number" id="maxWorkers" value="10" min="1">
             </div>
         </div>
         
@@ -360,9 +360,9 @@ https://example.com/page2"></textarea>
         let progressInterval = null;
         
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('requestsPerLink').value = localStorage.getItem('requestsPerLink') || '100';
-            document.getElementById('duration').value = localStorage.getItem('duration') || '120';
-            document.getElementById('maxWorkers').value = localStorage.getItem('maxWorkers') || '5';
+            document.getElementById('requestsPerLink').value = localStorage.getItem('requestsPerLink') || '1000';
+            document.getElementById('duration').value = localStorage.getItem('duration') || '60';
+            document.getElementById('maxWorkers').value = localStorage.getItem('maxWorkers') || '10';
             
             document.getElementById('requestsPerLink').addEventListener('change', function() {
                 localStorage.setItem('requestsPerLink', this.value);
@@ -768,24 +768,30 @@ https://example.com/page2"></textarea>
             if (!AS.articleHasMore) btn.style.display = 'none';
         }
 
-        // 实时刷新阅读量
+        // 实时刷新阅读量（遍历所有已加载页）
         async function refreshBrowseCounts() {
             try {
-                var fd = new FormData();
-                fd.append('phone', BUILTIN_PHONE);
-                fd.append('password', BUILTIN_PWD);
-                if (AS.token) fd.append('token', AS.token);
-                fd.append('page', '1');
-                fd.append('pageSize', '50');
-                fd.append('channel_id', AS.currentChannel);
+                // 获取当前频道所有已加载页的文章浏览量
+                var totalPages = AS.articlePage;
+                var allFresh = [];
+                for (var p = 1; p <= totalPages; p++) {
+                    var fd = new FormData();
+                    fd.append('phone', BUILTIN_PHONE);
+                    fd.append('password', BUILTIN_PWD);
+                    if (AS.token) fd.append('token', AS.token);
+                    fd.append('page', String(p));
+                    fd.append('pageSize', '50');
+                    fd.append('channel_id', AS.currentChannel);
 
-                var res = await fetch(API_BASE + '/api.php?action=fetch_articles&channel_id=' + encodeURIComponent(AS.currentChannel), { method: 'POST', body: fd });
-                var d = await res.json();
-                if (!d.success || !d.articles) return;
-                if (d.token) { AS.token = d.token; localStorage.setItem('zjs_token', d.token); }
+                    var res = await fetch(API_BASE + '/api.php?action=fetch_articles&channel_id=' + encodeURIComponent(AS.currentChannel), { method: 'POST', body: fd });
+                    var d = await res.json();
+                    if (!d.success || !d.articles) continue;
+                    if (d.token) { AS.token = d.token; localStorage.setItem('zjs_token', d.token); }
+                    allFresh = allFresh.concat(d.articles);
+                }
 
                 var map = {};
-                d.articles.forEach(function(a){ map[a.news_id] = a.browse_count || 0; });
+                allFresh.forEach(function(a){ map[a.news_id] = a.browse_count || 0; });
                 AS.articles.forEach(function(a) {
                     if (map[a.news_id] !== undefined && a.browse_count !== map[a.news_id]) {
                         var old = a.browse_count;
