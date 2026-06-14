@@ -257,17 +257,17 @@ https://example.com/page2"></textarea>
         <div class="settings">
             <div class="form-group">
                 <label for="requestsPerLink">每个链接刷新次数:</label>
-                <input type="number" id="requestsPerLink" value="1000" min="1">
+                <input type="number" id="requestsPerLink" value="100" min="1">
             </div>
             
             <div class="form-group">
                 <label for="duration">完成时间 (秒):</label>
-                <input type="number" id="duration" value="30" min="1">
+                <input type="number" id="duration" value="120" min="1">
             </div>
             
             <div class="form-group">
                 <label for="maxWorkers">并发线程数:</label>
-                <input type="number" id="maxWorkers" value="50" min="1">
+                <input type="number" id="maxWorkers" value="5" min="1">
             </div>
         </div>
         
@@ -360,9 +360,9 @@ https://example.com/page2"></textarea>
         let progressInterval = null;
         
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('requestsPerLink').value = localStorage.getItem('requestsPerLink') || '1000';
-            document.getElementById('duration').value = localStorage.getItem('duration') || '30';
-            document.getElementById('maxWorkers').value = localStorage.getItem('maxWorkers') || '50';
+            document.getElementById('requestsPerLink').value = localStorage.getItem('requestsPerLink') || '100';
+            document.getElementById('duration').value = localStorage.getItem('duration') || '120';
+            document.getElementById('maxWorkers').value = localStorage.getItem('maxWorkers') || '5';
             
             document.getElementById('requestsPerLink').addEventListener('change', function() {
                 localStorage.setItem('requestsPerLink', this.value);
@@ -530,7 +530,10 @@ https://example.com/page2"></textarea>
         
         async function makeRequest(url) {
             try {
-                const response = await fetch(url, {
+                // 加随机参数防缓存
+                var sep = url.indexOf('?') !== -1 ? '&' : '?';
+                var bustUrl = url + sep + '_t=' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+                const response = await fetch(bustUrl, {
                     method: 'GET',
                     mode: 'no-cors',
                     cache: 'no-cache'
