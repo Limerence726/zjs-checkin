@@ -492,29 +492,46 @@ https://example.com/page2"></textarea>
             var newsId = match ? match[1] : '';
             
             if (newsId) {
-                // 紫金山文章：批量上报，每次 batch 上报 batchSize 次
-                var batchCount = batchSize; // 每次请求上报的次数
+                // 紫金山文章：前端直接POST到统计接口（用户IP，不暴露服务器）
+                var batchCount = batchSize;
                 var batches = Math.ceil(totalRequests / batchCount);
                 
                 for (var b = 0; b < batches && isRefreshing; b++) {
                     var remaining = totalRequests - completed;
                     var thisBatch = Math.min(batchCount, remaining);
                     
+                    // 并发上报 thisBatch 次（紫金山统计接口支持CORS，正常POST即可）
+                    var promises = [];
+                    for (var i = 0; i < thisBatch; i++) {
+                        var nowS = Math.floor(Date.now() / 1000);
+                        var stayS = 30 + Math.floor(Math.random() * 90); // 停留30-120秒
+                        promises.push(
+                            fetch('https://total.zjsnews.cn/cc/user/addUserAction', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    system: 'h5',
+                                    userId: 10000,
+                                    type: 0,
+                                    newsId: newsId,
+                                    startPageTime: nowS - stayS,
+                                    endPageTime: nowS
+                                })
+                            }).then(function(r) { return r.json(); }).then(function(d) { return d && d.code === 1; }).catch(function() { return false; })
+                        );
+                    }
+                    
                     try {
-                        var fd = new FormData();
-                        fd.append('news_ids', newsId);
-                        fd.append('count', String(thisBatch));
-                        var res = await fetch(API_BASE + '/api.php?action=batch_report_browse', { method: 'POST', body: fd });
-                        var d = await res.json();
-                        
-                        if (d.success) {
-                            task.success += (d.success_count || thisBatch);
-                            task.failed += (d.fail_count || 0);
-                        } else {
-                            task.failed += thisBatch;
+                        var results = await Promise.allSettled(promises);
+                        for (var j = 0; j < results.length; j++) {
+                            if (results[j].status === 'fulfilled' && results[j].value) {
+                                task.success++;
+                            } else {
+                                task.failed++;
+                            }
+                            task.completed++;
+                            completed++;
                         }
-                        task.completed += thisBatch;
-                        completed += thisBatch;
                     } catch (error) {
                         task.failed += thisBatch;
                         task.completed += thisBatch;
@@ -523,7 +540,7 @@ https://example.com/page2"></textarea>
                     
                     // 批次间隔
                     if (completed < totalRequests && isRefreshing) {
-                        var delay = Math.max(200, 1000 * batchCount / requestsPerSecond);
+                        var delay = Math.max(100, 500 * batchCount / requestsPerSecond);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
@@ -572,27 +589,13 @@ https://example.com/page2"></textarea>
         }
         
         async function makeRequest(url) {
-            // 新版：提取 news_id，调用后端 batch_report_browse 接口上报阅读量
-            // 不再用 no-cors GET 页面（无法触发阅读量上报）
-            var newsId = '';
-            var match = url.match(/news\/(\d+)/);
-            if (match) newsId = match[1];
-            
-            if (!newsId) {
-                // 不是紫金山文章链接，回退到旧逻辑
-                try {
-                    const response = await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-cache' });
-                    return true;
-                } catch (error) { return false; }
-            }
-            
             try {
-                var fd = new FormData();
-                fd.append('news_ids', newsId);
-                fd.append('count', '1');
-                var res = await fetch(API_BASE + '/api.php?action=batch_report_browse', { method: 'POST', body: fd });
-                var d = await res.json();
-                return d.success === true;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    cache: 'no-cache'
+                });
+                return true;
             } catch (error) {
                 return false;
             }
