@@ -262,7 +262,7 @@ https://example.com/page2"></textarea>
             
             <div class="form-group">
                 <label for="duration">完成时间 (秒):</label>
-                <input type="number" id="duration" value="240" min="1">
+                <input type="number" id="duration" value="360" min="1">
             </div>
             
             <div class="form-group">
@@ -361,7 +361,7 @@ https://example.com/page2"></textarea>
         
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('requestsPerLink').value = localStorage.getItem('requestsPerLink') || '10000';
-            document.getElementById('duration').value = localStorage.getItem('duration') || '240';
+            document.getElementById('duration').value = localStorage.getItem('duration') || '360';
             document.getElementById('maxWorkers').value = localStorage.getItem('maxWorkers') || '10';
             
             document.getElementById('requestsPerLink').addEventListener('change', function() {
