@@ -738,7 +738,13 @@ https://example.com/page2"></textarea>
                 if (d.token) { AS.token = d.token; localStorage.setItem('zjs_token', d.token); }
 
                 var newArticles = d.articles || [];
-                AS.articleHasMore = d.hasMore !== false && newArticles.length >= 30;
+                // 如果API明确返回hasMore=false且本页文章<pageSize，说明真的没更多了
+                // 否则始终允许尝试翻页
+                if (d.hasMore === false && newArticles.length < 50) {
+                    AS.articleHasMore = false;
+                } else {
+                    AS.articleHasMore = true;
+                }
 
                 if (reset) {
                     AS.articles = newArticles;
@@ -764,8 +770,7 @@ https://example.com/page2"></textarea>
             var btn = document.getElementById('loadMoreBtn');
             btn.textContent = '加载中...';
             await loadArticles(false);
-            btn.textContent = AS.articleHasMore ? '加载更多' : '已全部加载';
-            if (!AS.articleHasMore) btn.style.display = 'none';
+            // 加载完成后状态由 renderArticleList 更新按钮
         }
 
         // 实时刷新阅读量（遍历所有已加载页）
@@ -834,7 +839,11 @@ https://example.com/page2"></textarea>
 
             var moreBtn = document.getElementById('loadMoreBtn');
             if (q) { moreBtn.style.display = 'none'; }
-            else { moreBtn.style.display = AS.articleHasMore ? 'block' : 'none'; if (AS.articleHasMore) moreBtn.textContent = '加载更多'; }
+            else {
+                moreBtn.style.display = 'block';
+                if (AS.articleHasMore) { moreBtn.textContent = '加载更多'; moreBtn.style.color = ''; }
+                else { moreBtn.textContent = '已全部加载'; moreBtn.style.color = '#999'; }
+            }
 
             var countText = q ? ('匹配 ' + filtered.length + ' / 共 ' + AS.articles.length + ' 篇') : ('共 ' + AS.articles.length + ' 篇');
             document.getElementById('articleCount').textContent = countText;
