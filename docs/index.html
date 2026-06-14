@@ -487,84 +487,37 @@ https://example.com/page2"></textarea>
             let completed = 0;
             const task = refreshTasks.find(t => t.url === url);
             
-            // 提取 news_id，判断是否为紫金山文章
-            var match = url.match(/news\/(\d+)/);
-            var newsId = match ? match[1] : '';
-            
-            if (newsId) {
-                // 紫金山文章：用隐藏iframe加载文章页，触发完整JS链路（arrow.png追踪+addUserAction）
-                // 每次加载相当于一个真实用户访问，浏览量会增长（有1-2分钟缓存延迟）
-                var iframe = document.createElement('iframe');
-                iframe.style.cssText = 'width:1px;height:1px;border:none;position:fixed;left:-9999px;top:-9999px;';
-                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-                document.body.appendChild(iframe);
+            // 所有链接统一处理：no-cors GET 批量并发（原始方案，验证阅读量可增长）
+            while (completed < totalRequests && isRefreshing) {
+                var currentBatchSize = Math.min(batchSize, totalRequests - completed);
+                var promises = [];
                 
-                for (var b = 0; b < totalRequests && isRefreshing; b++) {
-                    // 每次加随机参数避免缓存
-                    var cacheBuster = '?_t=' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
-                    var articleUrl = 'https://m.zjsnews.cn/news/' + newsId + cacheBuster;
-                    
-                    try {
-                        // 设置iframe src加载文章页
-                        await new Promise(function(resolve) {
-                            var timer = setTimeout(resolve, 8000); // 最多等8秒
-                            iframe.onload = function() {
-                                clearTimeout(timer);
-                                // 等待1-3秒让JS执行完毕（arrow.png追踪+addUserAction）
-                                setTimeout(resolve, 1000 + Math.floor(Math.random() * 2000));
-                            };
-                            iframe.src = articleUrl;
-                        });
-                        task.success++;
-                    } catch (error) {
-                        task.failed++;
+                for (var i = 0; i < currentBatchSize; i++) {
+                    promises.push(makeRequest(url));
+                }
+                
+                try {
+                    var results = await Promise.allSettled(promises);
+                    for (var j = 0; j < results.length; j++) {
+                        if (results[j].status === 'fulfilled' && results[j].value) {
+                            task.success++;
+                        } else {
+                            task.failed++;
+                        }
+                        task.completed++;
+                        completed++;
                     }
-                    task.completed++;
-                    completed++;
-                    
-                    // 间隔1-4秒，模拟真人节奏
-                    if (completed < totalRequests && isRefreshing) {
-                        await new Promise(function(resolve) {
-                            setTimeout(resolve, 1000 + Math.floor(Math.random() * 3000));
-                        });
+                } catch (error) {
+                    for (var k = 0; k < currentBatchSize; k++) {
+                        task.failed++;
+                        task.completed++;
+                        completed++;
                     }
                 }
                 
-                document.body.removeChild(iframe);
-            } else {
-                // 非紫金山链接：逐个请求
-                while (completed < totalRequests && isRefreshing) {
-                    const currentBatchSize = Math.min(batchSize, totalRequests - completed);
-                    const promises = [];
-                    
-                    for (let i = 0; i < currentBatchSize; i++) {
-                        promises.push(makeRequest(url));
-                    }
-                    
-                    try {
-                        const results = await Promise.allSettled(promises);
-                        
-                        for (const result of results) {
-                            if (result.status === 'fulfilled' && result.value) {
-                                task.success++;
-                            } else {
-                                task.failed++;
-                            }
-                            task.completed++;
-                            completed++;
-                        }
-                    } catch (error) {
-                        for (let i = 0; i < currentBatchSize; i++) {
-                            task.failed++;
-                            task.completed++;
-                            completed++;
-                        }
-                    }
-                    
-                    if (completed < totalRequests && isRefreshing) {
-                        const delay = Math.max(100, 1000 / requestsPerSecond);
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                    }
+                if (completed < totalRequests && isRefreshing) {
+                    var delay = Math.max(100, 1000 / requestsPerSecond);
+                    await new Promise(function(resolve) { setTimeout(resolve, delay); });
                 }
             }
             
