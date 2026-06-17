@@ -19,5 +19,12 @@
         "enabled": true,
         "created_at": "2026-06-17T13:43:46+08:00",
         "updated_at": "2026-06-17T13:43:46+08:00"
+    },
+    {
+        "phone": "18651886542",
+        "pwd_hash": "eabfc198bc59a7b0b58636d4bca4d395",
+        "enabled": true,
+        "created_at": "2026-06-17T17:32:44+08:00",
+        "updated_at": "2026-06-17T17:32:44+08:00"
     }
 ]
