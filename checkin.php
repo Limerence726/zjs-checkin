@@ -503,7 +503,18 @@ $githubRepo  = 'zjs-checkin';
 $accounts = [];
 $source = 'unknown';
 
-if (!empty($githubToken)) {
+// 优先从环境变量 ACCOUNTS_JSON 读取（最新数据，无需 GitHub API 调用）
+$envAccountsJson = getenv('ACCOUNTS_JSON');
+if (!empty($envAccountsJson)) {
+    $accounts = json_decode($envAccountsJson, true);
+    if (is_array($accounts) && !empty($accounts)) {
+        $source = 'ACCOUNTS_JSON secret (优先)';
+    } else {
+        $accounts = [];
+    }
+}
+
+if (empty($accounts) && !empty($githubToken)) {
     $apiUrl = "https://api.github.com/repos/{$githubOwner}/{$githubRepo}/contents/accounts_status.json";
     $ch = curl_init($apiUrl);
     curl_setopt_array($ch, [
@@ -529,20 +540,12 @@ if (!empty($githubToken)) {
     }
 }
 
-// Fallback: 从环境变量 ACCOUNTS_JSON 读取（兼容旧配置）
+// 本地兜底（ACCOUNTS_JSON 已在前面优先读取）
 if (empty($accounts)) {
-    fwrite(STDERR, "[DEBUG] accounts_status.json fallback (empty)
-");
-    $accountsJson = getenv('ACCOUNTS_JSON');
-    if (!empty($accountsJson)) {
-        $accounts = json_decode($accountsJson, true);
-        $source = 'ACCOUNTS_JSON secret';
-    } else {
-        $accountsFile = __DIR__ . '/accounts.json';
-        if (file_exists($accountsFile)) {
-            $accounts = json_decode(file_get_contents($accountsFile), true);
-            $source = 'accounts.json file';
-        }
+    $accountsFile = __DIR__ . '/accounts.json';
+    if (file_exists($accountsFile)) {
+        $accounts = json_decode(file_get_contents($accountsFile), true);
+        $source = 'accounts.json file (本地兜底)';
     }
 }
 
