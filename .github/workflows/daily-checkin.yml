@@ -2,14 +2,16 @@ name: 紫金山自动打卡
 
 on:
   schedule:
-    # 每天 7:30 Asia/Shanghai = 23:30 UTC (前一天)
     - cron: '30 23 * * *'
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
     inputs:
       force:
         description: '强制运行（忽略时间窗口）'
         required: false
         default: 'false'
+  push:
+    branches:
+      - main
 
 jobs:
   checkin:
