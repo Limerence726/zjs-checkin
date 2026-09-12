@@ -531,6 +531,8 @@ if (!empty($githubToken)) {
 
 // Fallback: 从环境变量 ACCOUNTS_JSON 读取（兼容旧配置）
 if (empty($accounts)) {
+    fwrite(STDERR, "[DEBUG] accounts_status.json fallback (empty)
+");
     $accountsJson = getenv('ACCOUNTS_JSON');
     if (!empty($accountsJson)) {
         $accounts = json_decode($accountsJson, true);
