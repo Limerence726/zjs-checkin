@@ -505,6 +505,8 @@ $source = 'unknown';
 
 // 优先从环境变量 ACCOUNTS_JSON 读取（最新数据，无需 GitHub API 调用）
 $envAccountsJson = getenv('ACCOUNTS_JSON');
+echo "[DIAG] ACCOUNTS_JSON len=" . strlen($envAccountsJson ?? '') . " first50=" . substr($envAccountsJson ?? '', 0, 50) . "
+";
 if (!empty($envAccountsJson)) {
     $accounts = json_decode($envAccountsJson, true);
     if (is_array($accounts) && !empty($accounts)) {
@@ -539,6 +541,8 @@ if (empty($accounts) && !empty($githubToken)) {
         }
     }
 }
+echo "[DIAG] after-api accounts_count=" . count($accounts) . " source=" . $source . "
+";
 
 // 本地兜底（ACCOUNTS_JSON 已在前面优先读取）
 if (empty($accounts)) {
