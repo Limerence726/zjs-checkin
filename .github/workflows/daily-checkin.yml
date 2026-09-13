@@ -31,7 +31,7 @@ jobs:
     
     - name: 执行打卡
       env:
-        PAT_TOKEN: *** secrets.PAT }}
+        PAT_TOKEN: ${{ secrets.PAT }}
         ACCOUNTS_JSON: ${{ secrets.ACCOUNTS_JSON }}
         TZ: Asia/Shanghai
       run: |
