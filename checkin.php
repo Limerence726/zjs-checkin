@@ -669,6 +669,84 @@ $outputData = [
 $outputFile = __DIR__ . '/checkin_result.json';
 file_put_contents($outputFile, json_encode($outputData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
+// ==================== 提交结果到 GitHub（替代 workflow 里易错的 bash+curl） ====================
+// 原因：原 workflow 用 `curl -d "{...JSON 内联...}"` 提交，遇到换行/引号会 400 且不判状态码，
+// 于是 results/ 从 2026-09-13 起停止更新，后台一直显示"今日未打卡"。
+// 这里改由 PHP 走 Contents API 提交，显式检查 HTTP 状态码。
+// 注意：本段在打卡全部完成之后执行，任何失败都不影响打卡结果，也不会让 job 变红。
+$pushOk = false;
+try {
+    if (empty($githubToken)) {
+        echo "⚠️  未获取到 GitHub PAT，跳过结果提交\n";
+    } else {
+        $repoPath = "results/{$currentDate}.json";
+        $apiUrl   = "https://api.github.com/repos/{$githubOwner}/{$githubRepo}/contents/{$repoPath}";
+        $headers  = [
+            "Authorization: token {$githubToken}",
+            "User-Agent: ZJS-Checkin-Actions",
+            "Accept: application/vnd.github+json",
+            "X-GitHub-Api-Version: 2022-11-28",
+        ];
+
+        // 1) 先取已有文件的 sha（已存在则必须带上，否则 422）
+        $sha = '';
+        $ch = curl_init($apiUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 20,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPHEADER     => $headers,
+        ]);
+        $getResp = curl_exec($ch);
+        $getCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($getCode === 200 && $getResp) {
+            $getJson = json_decode($getResp, true);
+            if (isset($getJson['sha'])) {
+                $sha = $getJson['sha'];
+            }
+        }
+
+        // 2) PUT 提交，body 交给 json_encode，彻底避开手工拼 JSON 的转义问题
+        //    message 带 [skip ci]：PAT 提交属于外部提交，会触发 push 事件，加标记避免循环打卡
+        $payload = [
+            'message' => "打卡结果 {$currentDate} [skip ci]",
+            'content' => base64_encode(file_get_contents($outputFile)),
+            'branch'  => 'main',
+        ];
+        if ($sha !== '') {
+            $payload['sha'] = $sha;
+        }
+        $bodyJson = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        $ch = curl_init($apiUrl);
+        curl_setopt_array($ch, [
+            CURLOPT_CUSTOMREQUEST  => 'PUT',
+            CURLOPT_POSTFIELDS     => $bodyJson,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_HTTPHEADER     => array_merge($headers, ['Content-Type: application/json']),
+        ]);
+        $putResp = curl_exec($ch);
+        $putCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($putCode === 200 || $putCode === 201) {
+            $pushOk = true;
+            echo "✅ 结果已提交到仓库: {$repoPath}\n";
+            // 提交成功就删掉本地临时文件，让 workflow 里那段旧的提交步骤自动跳过（不再刷 400）
+            @unlink($outputFile);
+        } else {
+            echo "⚠️  结果提交失败 HTTP {$putCode}: " . substr((string)$putResp, 0, 300) . "\n";
+            echo "⚠️  checkin_result.json 已保留，打卡本身不受影响\n";
+        }
+    }
+} catch (Throwable $e) {
+    echo "⚠️  结果提交异常（不影响打卡）: " . $e->getMessage() . "\n";
+}
+
+
 echo "═══════════════════════════════════════════════════\n";
 echo "📊 打卡完成\n";
 echo "  账号数: " . count($allResults) . "\n";
