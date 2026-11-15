@@ -1,0 +1,270 @@
+{
+    "date": "2026-11-15",
+    "time": "2026-11-15 10:55:20",
+    "version": "v2",
+    "api_base": "https:\/\/api.zjsnews.cn",
+    "success": true,
+    "count": 4,
+    "results": [
+        {
+            "phone": "18811526177",
+            "time": "2026-11-15 10:55:20",
+            "login": true,
+            "sign": true,
+            "articles": [
+                {
+                    "news_id": "1074492171982222071",
+                    "read": true,
+                    "integral": false,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395559335781624",
+                    "read": false,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395310227645397",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395439076681248",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395628055267350",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                }
+            ],
+            "error": null,
+            "sign_msg": "signStatus=0, integral=9"
+        },
+        {
+            "phone": "17851262308",
+            "time": "2026-11-15 10:55:20",
+            "login": true,
+            "sign": true,
+            "articles": [
+                {
+                    "news_id": "1074492171982222071",
+                    "read": true,
+                    "integral": false,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395559335781624",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395310227645397",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395439076681248",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395628055267350",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                }
+            ],
+            "error": null,
+            "sign_msg": "signStatus=0, integral=9"
+        },
+        {
+            "phone": "17671852068",
+            "time": "2026-11-15 10:55:20",
+            "login": true,
+            "sign": true,
+            "articles": [
+                {
+                    "news_id": "1074492171982222071",
+                    "read": true,
+                    "integral": false,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395559335781624",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395310227645397",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395439076681248",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395628055267350",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                }
+            ],
+            "error": null,
+            "sign_msg": "signStatus=0, integral=9"
+        },
+        {
+            "phone": "18651886542",
+            "time": "2026-11-15 10:55:20",
+            "login": true,
+            "sign": true,
+            "articles": [
+                {
+                    "news_id": "1074492171982222071",
+                    "read": true,
+                    "integral": false,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395559335781624",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395310227645397",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395439076681248",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                },
+                {
+                    "news_id": "217395628055267350",
+                    "read": true,
+                    "integral": true,
+                    "favorite": true,
+                    "share_wx": true,
+                    "share_pyq": true,
+                    "like": true,
+                    "task_read": true,
+                    "task_like": true
+                }
+            ],
+            "error": null,
+            "sign_msg": "signStatus=0, integral=9"
+        }
+    ]
+}
